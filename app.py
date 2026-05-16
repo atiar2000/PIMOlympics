@@ -33,6 +33,7 @@ from oauth2client.service_account import ServiceAccountCredentials
 START_HEALTH = 100
 ROUNDS = 8
 SPREADSHEET_KEY = "1Svd5GGaUl7OHz1vCLC86PMzVvxLkbcMo7z6sIiTf9MQ"
+WORKSHEET_NAME = "Scores"
 
 
 # ─────────────────────────────────────────────────────────────────
@@ -874,14 +875,37 @@ def get_db():
         return None
 
 
+def get_scores_worksheet(db):
+    try:
+        return db.worksheet(WORKSHEET_NAME)
+    except Exception as e:
+        try:
+            fallback = db.sheet1
+            st.session_state["leaderboard_error"] = (
+                f'Leaderboard worksheet "{WORKSHEET_NAME}" was not found. '
+                f'Using first worksheet "{fallback.title}" instead. '
+                'Rename the tab to Scores if that sheet is not the leaderboard.'
+            )
+            return fallback
+        except Exception as fallback_error:
+            st.session_state["leaderboard_error"] = (
+                f'Leaderboard worksheet "{WORKSHEET_NAME}" not found: {e}. '
+                f'Also failed to load fallback worksheet: {fallback_error}'
+            )
+            return None
+
+
 def save_score(name: str, score: int, title: str) -> tuple[bool, Optional[str]]:
     try:
         db = get_db()
         if db is None:
             return False, st.session_state.get("leaderboard_error")
-        db.worksheet("Scores").append_row(
-            [datetime.now().isoformat(timespec="seconds"), name, score, title]
-        )
+        worksheet = get_scores_worksheet(db)
+        if worksheet is None:
+            return False, st.session_state.get("leaderboard_error")
+        worksheet.append_row([
+            datetime.now().isoformat(timespec="seconds"), name, score, title
+        ])
         return True, None
     except Exception as e:
         st.session_state["leaderboard_error"] = f"Leaderboard save failed: {e}"
@@ -893,7 +917,10 @@ def fetch_leaderboard() -> pd.DataFrame:
         db = get_db()
         if db is None:
             return pd.DataFrame()
-        rows = db.worksheet("Scores").get_all_values()
+        worksheet = get_scores_worksheet(db)
+        if worksheet is None:
+            return pd.DataFrame()
+        rows = worksheet.get_all_values()
         if len(rows) == 0:
             st.session_state["leaderboard_error"] = (
                 f"Leaderboard worksheet is empty. Source: {st.session_state.get('leaderboard_source', 'unknown')}"
