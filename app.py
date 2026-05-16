@@ -24,6 +24,13 @@ import pandas as pd
 import streamlit as st
 import gspread
 
+from google.oauth2.service_account import Credentials
+try:
+    # 1. Fetch the nested secrets block you saved
+    creds_dict = dict(st.secrets["gcp_service_account"])
+    
+    # 2. Repair any potential newline escaping issues automatically
+    creds_dict["private_key"] = creds_dict["private_key"].replace("\\n", "\n")
 
 # ─────────────────────────────────────────────────────────────────
 # CORE NUMBERS
