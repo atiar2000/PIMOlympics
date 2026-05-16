@@ -1,5 +1,5 @@
 """
- — a small game about catalog work
+PIMOlympics — a small game about catalog work
 by Ati from PIM
 
 You start with 100 Health. Eight things go wrong in a row.
