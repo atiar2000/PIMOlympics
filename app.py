@@ -17,20 +17,13 @@ from __future__ import annotations
 
 import random
 import time
-from collections.abc import Mapping
 from datetime import datetime
 from typing import Optional
 
-import json
 import pandas as pd
 import streamlit as st
 import gspread
-from oauth2client.service_account import ServiceAccountCredentials
-
-try:
-    from google.oauth2.service_account import Credentials as GoogleCredentials
-except ImportError:
-    GoogleCredentials = None
+from google.oauth2.service_account import Credentials
 
 
 # ─────────────────────────────────────────────────────────────────
@@ -38,8 +31,6 @@ except ImportError:
 # ─────────────────────────────────────────────────────────────────
 START_HEALTH = 100
 ROUNDS = 8
-SPREADSHEET_KEY = "1Svd5GGaUl7OHz1vCLC86PMzVvxLkbcMo7z6sIiTf9MQ"
-WORKSHEET_NAME = "Scores"
 
 
 # ─────────────────────────────────────────────────────────────────
@@ -841,144 +832,147 @@ META_CRISIS = {
 # ═══════════════════════════════════════════════════════════════════
 # DATA LAYER — Google Sheets leaderboard
 # ═══════════════════════════════════════════════════════════════════
-def get_db():
+# Using google-auth (modern) instead of the deprecated oauth2client.
+# gspread.authorize() works with google-auth Credentials objects.
+# NOT cached — so each call gets a fresh connection and failures
+# don't stay stuck in the Streamlit resource cache.
+# ═══════════════════════════════════════════════════════════════════
+
+SHEET_NAME     = "PIM_Odyssey_DB"   # must match the Google Sheet name exactly
+WORKSHEET_NAME = "Scores"           # must match the tab name exactly
+SCOPES = [
+    "https://spreadsheets.google.com/feeds",
+    "https://www.googleapis.com/auth/drive",
+]
+
+
+def _get_worksheet():
+    """Open the Scores worksheet. Raises informative exceptions on failure."""
+    info = dict(st.secrets["gcp_service_account"])
+    creds = Credentials.from_service_account_info(info, scopes=SCOPES)
+    client = gspread.authorize(creds)
+    spreadsheet = client.open(SHEET_NAME)
+    return spreadsheet.worksheet(WORKSHEET_NAME)
+
+
+def diagnose_db() -> list[dict]:
+    """
+    Run each connection step independently and report pass/fail.
+    Called from the intro screen so players/presenters can see exactly
+    what is broken before the game starts.
+    """
+    steps = []
+
+    # 1 — secrets present?
     try:
-        scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
-        key_data = st.secrets.get("gcp_service_account")
-        if key_data is None:
-            raise ValueError(
-                "Leaderboard service account secret is not configured. "
-                "Set st.secrets['gcp_service_account'] to the full service account JSON object."
-            )
+        info = dict(st.secrets["gcp_service_account"])
+        email = info.get("client_email", "not found")
+        steps.append({"ok": True,  "label": "Secrets loaded",
+                      "detail": f"Service account: {email}"})
+    except Exception as e:
+        steps.append({"ok": False, "label": "Secrets loaded",
+                      "detail": f"Missing or malformed secrets — {e}"})
+        return steps
 
-        if isinstance(key_data, str):
-            try:
-                key_data = json.loads(key_data)
-            except json.JSONDecodeError as e:
-                raise ValueError(
-                    "Leaderboard service account secret is a string but not valid JSON. "
-                    "Check st.secrets configuration."
-                ) from e
+    # 2 — private key parseable?
+    try:
+        creds = Credentials.from_service_account_info(info, scopes=SCOPES)
+        steps.append({"ok": True,  "label": "Credentials created",
+                      "detail": "Private key parsed successfully"})
+    except Exception as e:
+        steps.append({"ok": False, "label": "Credentials created",
+                      "detail": f"Private key error — {e}. Paste the FULL key including \\n newlines."})
+        return steps
 
-        if isinstance(key_data, Mapping) and not isinstance(key_data, dict):
-            key_data = dict(key_data)
-        if not isinstance(key_data, dict):
-            raise ValueError("Leaderboard service account secret must be a JSON object/dict.")
+    # 3 — can authorise with gspread?
+    try:
+        client = gspread.authorize(creds)
+        steps.append({"ok": True,  "label": "gspread authorised", "detail": "OK"})
+    except Exception as e:
+        steps.append({"ok": False, "label": "gspread authorised",
+                      "detail": f"Auth failure — {e}"})
+        return steps
 
-        if len(key_data) == 1 and isinstance(next(iter(key_data.values())), Mapping):
-            inner = next(iter(key_data.values()))
-            if isinstance(inner, Mapping):
-                inner_keys = set(inner.keys())
-                required = {"type", "project_id", "private_key_id", "private_key", "client_email", "client_id"}
-                if required.issubset(inner_keys):
-                    key_data = dict(inner)
+    # 4 — can find the spreadsheet?
+    try:
+        spreadsheet = client.open(SHEET_NAME)
+        steps.append({"ok": True,  "label": f"Spreadsheet '{SHEET_NAME}' found",
+                      "detail": f"ID: {spreadsheet.id}"})
+    except gspread.exceptions.SpreadsheetNotFound:
+        steps.append({"ok": False, "label": f"Spreadsheet '{SHEET_NAME}' found",
+                      "detail": (
+                          f"Not found. Either the sheet isn't named exactly '{SHEET_NAME}', "
+                          f"or it hasn't been shared with the service account email above."
+                      )})
+        return steps
+    except Exception as e:
+        steps.append({"ok": False, "label": f"Spreadsheet '{SHEET_NAME}' found",
+                      "detail": f"{e}"})
+        return steps
 
-        required = {"type", "project_id", "private_key", "client_email", "client_id"}
-        found = sorted(key_data.keys())
-        missing = sorted(required - set(key_data.keys()))
+    # 5 — can find the worksheet tab?
+    try:
+        ws = spreadsheet.worksheet(WORKSHEET_NAME)
+        all_rows = ws.get_all_values()
+        row_count = max(0, len(all_rows) - 1)  # minus header
+        steps.append({"ok": True,  "label": f"Worksheet '{WORKSHEET_NAME}' found",
+                      "detail": f"{row_count} data rows so far"})
+    except gspread.exceptions.WorksheetNotFound:
+        steps.append({"ok": False, "label": f"Worksheet '{WORKSHEET_NAME}' found",
+                      "detail": (
+                          f"Tab named '{WORKSHEET_NAME}' not found. "
+                          f"Rename your first tab to exactly '{WORKSHEET_NAME}'."
+                      )})
+        return steps
+    except Exception as e:
+        steps.append({"ok": False, "label": f"Worksheet '{WORKSHEET_NAME}' found",
+                      "detail": f"{e}"})
+
+    # 6 — column headers correct?
+    try:
+        headers = [h.strip() for h in all_rows[0]] if all_rows else []
+        expected = {"Timestamp", "Name", "Score", "Title"}
+        missing = expected - set(headers)
         if missing:
-            raise ValueError(
-                "Leaderboard service account JSON is missing required keys: "
-                f"{missing}. Found keys: {found}. "
-                "Ensure st.secrets['gcp_service_account'] contains the full service account JSON object."
-            )
-
-        private_key_id_missing = "private_key_id" not in key_data
-        if private_key_id_missing:
-            key_data = dict(key_data)
-
-        private_key = key_data["private_key"]
-        if not isinstance(private_key, str):
-            raise ValueError("Leaderboard service account private_key must be a string.")
-        if "-----BEGIN PRIVATE KEY-----" not in private_key or "-----END PRIVATE KEY-----" not in private_key:
-            raise ValueError(
-                "Leaderboard service account private_key does not contain a valid PEM block. "
-                "Ensure the key is a full PEM string with BEGIN/END markers."
-            )
-        if "\\n" in private_key and "\n" not in private_key:
-            key_data["private_key"] = private_key.replace("\\n", "\n")
-
-        try:
-            creds = ServiceAccountCredentials.from_json_keyfile_dict(key_data, scope)
-        except Exception as original_exc:
-            if not private_key_id_missing or GoogleCredentials is None:
-                raise
-            try:
-                creds = GoogleCredentials.from_service_account_info(key_data)
-            except Exception:
-                raise original_exc
-
-        db = gspread.authorize(creds).open_by_key(SPREADSHEET_KEY)
-        st.session_state["leaderboard_source"] = f"{db.title} ({db.id})"
-        return db
+            steps.append({"ok": False, "label": "Column headers",
+                          "detail": (
+                              f"Missing columns: {missing}. "
+                              f"Row 1 of '{WORKSHEET_NAME}' must be: Timestamp | Name | Score | Title"
+                          )})
+        else:
+            steps.append({"ok": True, "label": "Column headers",
+                          "detail": f"Found: {headers}"})
     except Exception as e:
-        st.session_state["leaderboard_error"] = f"Leaderboard connection failed: {e}"
-        raise
+        steps.append({"ok": False, "label": "Column headers", "detail": str(e)})
 
-
-def get_scores_worksheet(db):
-    try:
-        return db.worksheet(WORKSHEET_NAME)
-    except Exception as e:
-        sheet_names = [ws.title for ws in db.worksheets()]
-        st.session_state["leaderboard_error"] = (
-            f'Leaderboard worksheet "{WORKSHEET_NAME}" was not found. '
-            f'Available worksheet tabs: {sheet_names}. '
-            'Create or rename a tab to Scores, then refresh.'
-        )
-        return None
+    return steps
 
 
 def save_score(name: str, score: int, title: str) -> tuple[bool, Optional[str]]:
     try:
-        try:
-            db = get_db()
-        except Exception as e:
-            return False, str(e)
-        worksheet = get_scores_worksheet(db)
-        if worksheet is None:
-            return False, st.session_state.get("leaderboard_error")
-        worksheet.append_row([
-            datetime.now().isoformat(timespec="seconds"), name, score, title
-        ])
+        ws = _get_worksheet()
+        ws.append_row([datetime.now().isoformat(timespec="seconds"), name, score, title])
         return True, None
     except Exception as e:
-        st.session_state["leaderboard_error"] = f"Leaderboard save failed: {e}"
         return False, str(e)
 
 
-def fetch_leaderboard() -> pd.DataFrame:
+def fetch_leaderboard() -> tuple[pd.DataFrame, Optional[str]]:
+    """Returns (dataframe, error_string). Error is None on success."""
     try:
-        try:
-            db = get_db()
-        except Exception:
-            return pd.DataFrame()
-        worksheet = get_scores_worksheet(db)
-        if worksheet is None:
-            return pd.DataFrame()
-        rows = worksheet.get_all_values()
-        if len(rows) == 0:
-            st.session_state["leaderboard_error"] = (
-                f"Leaderboard worksheet is empty. Source: {st.session_state.get('leaderboard_source', 'unknown')}"
-            )
-            return pd.DataFrame()
-        if len(rows) == 1:
-            headers = [h.strip() for h in rows[0]]
-            st.session_state["leaderboard_error"] = (
-                f"Leaderboard worksheet has only a header row. Found headers: {headers}. "
-                f"Source: {st.session_state.get('leaderboard_source', 'unknown')}"
-            )
-            return pd.DataFrame()
+        ws = _get_worksheet()
+        rows = ws.get_all_values()
+        if len(rows) < 2:
+            return pd.DataFrame(), None   # empty sheet, no error
         headers = [h.strip() for h in rows[0]]
         df = pd.DataFrame(rows[1:], columns=headers)
-        # tolerate the old schema names too
+        # backwards-compat with old column names from earlier versions
         df = df.rename(columns={"Architect": "Name", "CI": "Score", "Phase": "Title"})
         if "Score" not in df.columns or "Name" not in df.columns:
-            st.session_state["leaderboard_error"] = (
-                f"Leaderboard worksheet is missing required columns. Found: {list(df.columns)}. "
-                f"Source: {st.session_state.get('leaderboard_source', 'unknown')}"
+            return pd.DataFrame(), (
+                f"Column mismatch. Found: {list(df.columns)}. "
+                f"Expected: Timestamp, Name, Score, Title."
             )
-            return pd.DataFrame()
         df["Score"] = pd.to_numeric(df["Score"], errors="coerce").fillna(0).astype(int)
         out = (df.groupby("Name", as_index=False)
                  .agg({"Score": "max", "Title": "first"})
@@ -986,11 +980,9 @@ def fetch_leaderboard() -> pd.DataFrame:
                  .reset_index(drop=True))
         out.index = out.index + 1
         out.index.name = "#"
-        st.session_state["leaderboard_error"] = None
-        return out
+        return out, None
     except Exception as e:
-        st.session_state["leaderboard_error"] = f"Leaderboard fetch failed: {e}"
-        return pd.DataFrame()
+        return pd.DataFrame(), str(e)
 
 
 # ═══════════════════════════════════════════════════════════════════
@@ -1132,7 +1124,7 @@ def render_confetti(pieces: int = 60):
 # SCREENS
 # ═══════════════════════════════════════════════════════════════════
 def screen_intro():
-    st.markdown('<div class="eyebrow">A small game about PIM data quality</div>', unsafe_allow_html=True)
+    st.markdown('<div class="eyebrow">A small game about data quality</div>', unsafe_allow_html=True)
     st.markdown('<h1><span class="kinetic">Don\'t let the catalog die.</span></h1>', unsafe_allow_html=True)
     st.markdown(
         '<p style="color: var(--text-mute); font-size: 1.05rem; line-height: 1.7; margin-top: 0.3rem;">'
@@ -1156,15 +1148,38 @@ def screen_intro():
             st.warning("Please enter a name.")
     st.markdown('</div>', unsafe_allow_html=True)
 
-    lb = fetch_leaderboard()
-    error = st.session_state.get("leaderboard_error")
-    if error:
-        st.error(error)
-    elif not lb.empty:
-        st.markdown('<div class="card-label" style="margin-top: 2.5rem;">Leaderboard</div>', unsafe_allow_html=True)
-        st.dataframe(lb, use_container_width=True)
+    # ── leaderboard with visible error ──────────────────────────────
+    st.markdown('<div class="card-label" style="margin-top: 2.5rem;">Leaderboard</div>', unsafe_allow_html=True)
+    lb, lb_err = fetch_leaderboard()
+    if lb_err:
+        st.error(f"⚠ Cannot load leaderboard: {lb_err}")
+    elif lb.empty:
+        st.caption("No scores yet — be the first.")
     else:
-        st.info("Leaderboard is empty. Play once to add a score.")
+        st.dataframe(lb, use_container_width=True)
+
+    # ── connection diagnostic (always visible) ───────────────────────
+    with st.expander("🔌  Database connection status", expanded=lb_err is not None):
+        steps = diagnose_db()
+        for s in steps:
+            icon = "✅" if s["ok"] else "❌"
+            st.markdown(
+                f"**{icon} {s['label']}**  \n"
+                f"<span style='color: var(--text-mute); font-size: 0.88rem;'>{s['detail']}</span>",
+                unsafe_allow_html=True,
+            )
+        if all(s["ok"] for s in steps):
+            st.success("All checks passed — leaderboard is live.", icon="✅")
+        else:
+            st.markdown(
+                "**Fix checklist:**\n"
+                "1. Sheet named exactly **`PIM_Odyssey_DB`**\n"
+                "2. Tab named exactly **`Scores`**\n"
+                "3. Row 1 headers: **`Timestamp | Name | Score | Title`**\n"
+                "4. Sheet shared with the service account email (Editor role)\n"
+                "5. Google Sheets API **and** Drive API both enabled in Google Cloud\n"
+                "6. Full private key pasted in Streamlit secrets (no placeholder text)\n"
+            )
 
 
 def screen_crisis():
@@ -1306,23 +1321,20 @@ def screen_end():
 
     # save once
     if not st.session_state.saved:
-        ok, save_error = save_score(name, health, title)
+        ok, save_err = save_score(name, health, title)
         st.session_state.saved = True
-        if ok:
-            st.success("Score saved to the leaderboard.")
-        else:
-            st.error(save_error or "Failed to save score to the leaderboard.")
+        if not ok:
+            st.warning(f"⚠ Score not saved to leaderboard: {save_err}")
 
     # leaderboard
     st.markdown('<div class="card-label" style="margin-top: 2rem;">Leaderboard</div>', unsafe_allow_html=True)
-    lb = fetch_leaderboard()
-    error = st.session_state.get("leaderboard_error")
-    if error:
-        st.error(error)
-    elif not lb.empty:
-        st.dataframe(lb, use_container_width=True)
+    lb, lb_err = fetch_leaderboard()
+    if lb_err:
+        st.error(f"⚠ Cannot load leaderboard: {lb_err}")
+    elif lb.empty:
+        st.caption("No entries yet.")
     else:
-        st.info("Leaderboard is empty. Play once to add a score.")
+        st.dataframe(lb, use_container_width=True)
 
     st.markdown("<br>", unsafe_allow_html=True)
     st.markdown('<div class="primary-action">', unsafe_allow_html=True)
