@@ -1028,7 +1028,7 @@ def render_confetti(pieces: int = 60):
 # SCREENS
 # ═══════════════════════════════════════════════════════════════════
 def screen_intro():
-    st.markdown('<div class="eyebrow">A small game about data quality</div>', unsafe_allow_html=True)
+    st.markdown('<div class="eyebrow">A small game about PIM data quality</div>', unsafe_allow_html=True)
     st.markdown('<h1><span class="kinetic">Don\'t let the catalog die.</span></h1>', unsafe_allow_html=True)
     st.markdown(
         '<p style="color: var(--text-mute); font-size: 1.05rem; line-height: 1.7; margin-top: 0.3rem;">'
@@ -1053,9 +1053,14 @@ def screen_intro():
     st.markdown('</div>', unsafe_allow_html=True)
 
     lb = fetch_leaderboard()
-    if not lb.empty:
+    error = st.session_state.get("leaderboard_error")
+    if error:
+        st.error(error)
+    elif not lb.empty:
         st.markdown('<div class="card-label" style="margin-top: 2.5rem;">Leaderboard</div>', unsafe_allow_html=True)
         st.dataframe(lb, use_container_width=True)
+    else:
+        st.info("Leaderboard is empty. Play once to add a score.")
 
 
 def screen_crisis():
@@ -1203,8 +1208,13 @@ def screen_end():
     # leaderboard
     st.markdown('<div class="card-label" style="margin-top: 2rem;">Leaderboard</div>', unsafe_allow_html=True)
     lb = fetch_leaderboard()
-    if not lb.empty:
+    error = st.session_state.get("leaderboard_error")
+    if error:
+        st.error(error)
+    elif not lb.empty:
         st.dataframe(lb, use_container_width=True)
+    else:
+        st.info("Leaderboard is empty. Play once to add a score.")
 
     st.markdown("<br>", unsafe_allow_html=True)
     st.markdown('<div class="primary-action">', unsafe_allow_html=True)
