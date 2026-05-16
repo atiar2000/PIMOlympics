@@ -20,6 +20,7 @@ import time
 from datetime import datetime
 from typing import Optional
 
+import json
 import pandas as pd
 import streamlit as st
 import gspread
@@ -836,9 +837,19 @@ META_CRISIS = {
 def get_db():
     try:
         scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
-        creds = ServiceAccountCredentials.from_json_keyfile_dict(
-            dict(st.secrets["gcp_service_account"]), scope
-        )
+        key_data = st.secrets["gcp_service_account"]
+        if isinstance(key_data, str):
+            try:
+                key_data = json.loads(key_data)
+            except json.JSONDecodeError as e:
+                raise ValueError(
+                    "Leaderboard service account secret is a string but not valid JSON. "
+                    "Check st.secrets configuration."
+                ) from e
+        if not isinstance(key_data, dict):
+            raise ValueError("Leaderboard service account secret must be a JSON object/dict.")
+
+        creds = ServiceAccountCredentials.from_json_keyfile_dict(key_data, scope)
         db = gspread.authorize(creds).open("PIM_Odyssey_DB")
         st.session_state["leaderboard_source"] = f"{db.title} ({db.id})"
         return db
