@@ -849,6 +849,21 @@ def get_db():
         if not isinstance(key_data, dict):
             raise ValueError("Leaderboard service account secret must be a JSON object/dict.")
 
+        missing = [k for k in ("type", "project_id", "private_key_id", "private_key", "client_email", "client_id") if k not in key_data]
+        if missing:
+            raise ValueError(f"Leaderboard service account JSON is missing required keys: {missing}")
+
+        private_key = key_data["private_key"]
+        if not isinstance(private_key, str):
+            raise ValueError("Leaderboard service account private_key must be a string.")
+        if "-----BEGIN PRIVATE KEY-----" not in private_key or "-----END PRIVATE KEY-----" not in private_key:
+            raise ValueError(
+                "Leaderboard service account private_key does not contain a valid PEM block. "
+                "Ensure the key is a full PEM string with BEGIN/END markers."
+            )
+        if "\\n" in private_key and "\n" not in private_key:
+            key_data["private_key"] = private_key.replace("\\n", "\n")
+
         creds = ServiceAccountCredentials.from_json_keyfile_dict(key_data, scope)
         db = gspread.authorize(creds).open("PIM_Odyssey_DB")
         st.session_state["leaderboard_source"] = f"{db.title} ({db.id})"
