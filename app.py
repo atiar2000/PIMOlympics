@@ -834,33 +834,46 @@ META_CRISIS = {
 # ═══════════════════════════════════════════════════════════════════
 @st.cache_resource
 def get_db():
-    scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
-    creds = ServiceAccountCredentials.from_json_keyfile_dict(
-        dict(st.secrets["gcp_service_account"]), scope
-    )
-    return gspread.authorize(creds).open("PIM_Odyssey_DB")
+    try:
+        scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
+        creds = ServiceAccountCredentials.from_json_keyfile_dict(
+            dict(st.secrets["gcp_service_account"]), scope
+        )
+        return gspread.authorize(creds).open("PIM_Odyssey_DB")
+    except Exception as e:
+        st.session_state["leaderboard_error"] = f"Leaderboard connection failed: {e}"
+        return None
 
 
 def save_score(name: str, score: int, title: str) -> tuple[bool, Optional[str]]:
     try:
-        get_db().worksheet("Scores").append_row(
+        db = get_db()
+        if db is None:
+            return False, st.session_state.get("leaderboard_error")
+        db.worksheet("Scores").append_row(
             [datetime.now().isoformat(timespec="seconds"), name, score, title]
         )
         return True, None
     except Exception as e:
+        st.session_state["leaderboard_error"] = f"Leaderboard save failed: {e}"
         return False, str(e)
 
 
 def fetch_leaderboard() -> pd.DataFrame:
     try:
-        rows = get_db().worksheet("Scores").get_all_values()
+        db = get_db()
+        if db is None:
+            return pd.DataFrame()
+        rows = db.worksheet("Scores").get_all_values()
         if len(rows) < 2:
+            st.session_state["leaderboard_error"] = None
             return pd.DataFrame()
         headers = [h.strip() for h in rows[0]]
         df = pd.DataFrame(rows[1:], columns=headers)
         # tolerate the old schema names too
         df = df.rename(columns={"Architect": "Name", "CI": "Score", "Phase": "Title"})
         if "Score" not in df.columns or "Name" not in df.columns:
+            st.session_state["leaderboard_error"] = "Leaderboard worksheet is missing required columns."
             return pd.DataFrame()
         df["Score"] = pd.to_numeric(df["Score"], errors="coerce").fillna(0).astype(int)
         out = (df.groupby("Name", as_index=False)
@@ -869,8 +882,10 @@ def fetch_leaderboard() -> pd.DataFrame:
                  .reset_index(drop=True))
         out.index = out.index + 1
         out.index.name = "#"
+        st.session_state["leaderboard_error"] = None
         return out
-    except Exception:
+    except Exception as e:
+        st.session_state["leaderboard_error"] = f"Leaderboard fetch failed: {e}"
         return pd.DataFrame()
 
 
