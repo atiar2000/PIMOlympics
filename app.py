@@ -839,7 +839,9 @@ def get_db():
         creds = ServiceAccountCredentials.from_json_keyfile_dict(
             dict(st.secrets["gcp_service_account"]), scope
         )
-        return gspread.authorize(creds).open("PIM_Odyssey_DB")
+        db = gspread.authorize(creds).open("PIM_Odyssey_DB")
+        st.session_state["leaderboard_source"] = f"{db.title} ({db.id})"
+        return db
     except Exception as e:
         st.session_state["leaderboard_error"] = f"Leaderboard connection failed: {e}"
         return None
@@ -865,15 +867,27 @@ def fetch_leaderboard() -> pd.DataFrame:
         if db is None:
             return pd.DataFrame()
         rows = db.worksheet("Scores").get_all_values()
-        if len(rows) < 2:
-            st.session_state["leaderboard_error"] = None
+        if len(rows) == 0:
+            st.session_state["leaderboard_error"] = (
+                f"Leaderboard worksheet is empty. Source: {st.session_state.get('leaderboard_source', 'unknown')}"
+            )
+            return pd.DataFrame()
+        if len(rows) == 1:
+            headers = [h.strip() for h in rows[0]]
+            st.session_state["leaderboard_error"] = (
+                f"Leaderboard worksheet has only a header row. Found headers: {headers}. "
+                f"Source: {st.session_state.get('leaderboard_source', 'unknown')}"
+            )
             return pd.DataFrame()
         headers = [h.strip() for h in rows[0]]
         df = pd.DataFrame(rows[1:], columns=headers)
         # tolerate the old schema names too
         df = df.rename(columns={"Architect": "Name", "CI": "Score", "Phase": "Title"})
         if "Score" not in df.columns or "Name" not in df.columns:
-            st.session_state["leaderboard_error"] = "Leaderboard worksheet is missing required columns."
+            st.session_state["leaderboard_error"] = (
+                f"Leaderboard worksheet is missing required columns. Found: {list(df.columns)}. "
+                f"Source: {st.session_state.get('leaderboard_source', 'unknown')}"
+            )
             return pd.DataFrame()
         df["Score"] = pd.to_numeric(df["Score"], errors="coerce").fillna(0).astype(int)
         out = (df.groupby("Name", as_index=False)
@@ -1202,8 +1216,12 @@ def screen_end():
 
     # save once
     if not st.session_state.saved:
-        ok, _ = save_score(name, health, title)
+        ok, save_error = save_score(name, health, title)
         st.session_state.saved = True
+        if ok:
+            st.success("Score saved to the leaderboard.")
+        else:
+            st.error(save_error or "Failed to save score to the leaderboard.")
 
     # leaderboard
     st.markdown('<div class="card-label" style="margin-top: 2rem;">Leaderboard</div>', unsafe_allow_html=True)
