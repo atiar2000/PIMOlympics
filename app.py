@@ -32,6 +32,7 @@ from oauth2client.service_account import ServiceAccountCredentials
 # ─────────────────────────────────────────────────────────────────
 START_HEALTH = 100
 ROUNDS = 8
+SPREADSHEET_KEY = "1Svd5GGaUl7OHz1vCLC86PMzVvxLkbcMo7z6sIiTf9MQ"
 
 
 # ─────────────────────────────────────────────────────────────────
@@ -865,7 +866,7 @@ def get_db():
             key_data["private_key"] = private_key.replace("\\n", "\n")
 
         creds = ServiceAccountCredentials.from_json_keyfile_dict(key_data, scope)
-        db = gspread.authorize(creds).open("PIM_Odyssey_DB")
+        db = gspread.authorize(creds).open_by_key(SPREADSHEET_KEY)
         st.session_state["leaderboard_source"] = f"{db.title} ({db.id})"
         return db
     except Exception as e:
