@@ -835,7 +835,6 @@ META_CRISIS = {
 # ═══════════════════════════════════════════════════════════════════
 # DATA LAYER — Google Sheets leaderboard
 # ═══════════════════════════════════════════════════════════════════
-@st.cache_resource
 def get_db():
     try:
         scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
@@ -872,34 +871,28 @@ def get_db():
         return db
     except Exception as e:
         st.session_state["leaderboard_error"] = f"Leaderboard connection failed: {e}"
-        return None
+        raise
 
 
 def get_scores_worksheet(db):
     try:
         return db.worksheet(WORKSHEET_NAME)
     except Exception as e:
-        try:
-            fallback = db.sheet1
-            st.session_state["leaderboard_error"] = (
-                f'Leaderboard worksheet "{WORKSHEET_NAME}" was not found. '
-                f'Using first worksheet "{fallback.title}" instead. '
-                'Rename the tab to Scores if that sheet is not the leaderboard.'
-            )
-            return fallback
-        except Exception as fallback_error:
-            st.session_state["leaderboard_error"] = (
-                f'Leaderboard worksheet "{WORKSHEET_NAME}" not found: {e}. '
-                f'Also failed to load fallback worksheet: {fallback_error}'
-            )
-            return None
+        sheet_names = [ws.title for ws in db.worksheets()]
+        st.session_state["leaderboard_error"] = (
+            f'Leaderboard worksheet "{WORKSHEET_NAME}" was not found. '
+            f'Available worksheet tabs: {sheet_names}. '
+            'Create or rename a tab to Scores, then refresh.'
+        )
+        return None
 
 
 def save_score(name: str, score: int, title: str) -> tuple[bool, Optional[str]]:
     try:
-        db = get_db()
-        if db is None:
-            return False, st.session_state.get("leaderboard_error")
+        try:
+            db = get_db()
+        except Exception as e:
+            return False, str(e)
         worksheet = get_scores_worksheet(db)
         if worksheet is None:
             return False, st.session_state.get("leaderboard_error")
@@ -914,8 +907,9 @@ def save_score(name: str, score: int, title: str) -> tuple[bool, Optional[str]]:
 
 def fetch_leaderboard() -> pd.DataFrame:
     try:
-        db = get_db()
-        if db is None:
+        try:
+            db = get_db()
+        except Exception:
             return pd.DataFrame()
         worksheet = get_scores_worksheet(db)
         if worksheet is None:
