@@ -839,7 +839,13 @@ META_CRISIS = {
 def get_db():
     try:
         scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
-        key_data = st.secrets["gcp_service_account"]
+        key_data = st.secrets.get("gcp_service_account")
+        if key_data is None:
+            raise ValueError(
+                "Leaderboard service account secret is not configured. "
+                "Set st.secrets['gcp_service_account'] to the full service account JSON object."
+            )
+
         if isinstance(key_data, str):
             try:
                 key_data = json.loads(key_data)
@@ -848,14 +854,29 @@ def get_db():
                     "Leaderboard service account secret is a string but not valid JSON. "
                     "Check st.secrets configuration."
                 ) from e
+
         if isinstance(key_data, Mapping) and not isinstance(key_data, dict):
             key_data = dict(key_data)
         if not isinstance(key_data, dict):
             raise ValueError("Leaderboard service account secret must be a JSON object/dict.")
 
-        missing = [k for k in ("type", "project_id", "private_key_id", "private_key", "client_email", "client_id") if k not in key_data]
+        if len(key_data) == 1 and isinstance(next(iter(key_data.values())), Mapping):
+            inner = next(iter(key_data.values()))
+            if isinstance(inner, Mapping):
+                inner_keys = set(inner.keys())
+                required = {"type", "project_id", "private_key_id", "private_key", "client_email", "client_id"}
+                if required.issubset(inner_keys):
+                    key_data = dict(inner)
+
+        required = {"type", "project_id", "private_key_id", "private_key", "client_email", "client_id"}
+        found = sorted(key_data.keys())
+        missing = sorted(required - set(key_data.keys()))
         if missing:
-            raise ValueError(f"Leaderboard service account JSON is missing required keys: {missing}")
+            raise ValueError(
+                "Leaderboard service account JSON is missing required keys: "
+                f"{missing}. Found keys: {found}. "
+                "Ensure st.secrets['gcp_service_account'] contains the full service account JSON object."
+            )
 
         private_key = key_data["private_key"]
         if not isinstance(private_key, str):
