@@ -27,6 +27,11 @@ import streamlit as st
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
 
+try:
+    from google.oauth2.service_account import Credentials as GoogleCredentials
+except ImportError:
+    GoogleCredentials = None
+
 
 # ─────────────────────────────────────────────────────────────────
 # CORE NUMBERS
@@ -868,7 +873,7 @@ def get_db():
                 if required.issubset(inner_keys):
                     key_data = dict(inner)
 
-        required = {"type", "project_id", "private_key_id", "private_key", "client_email", "client_id"}
+        required = {"type", "project_id", "private_key", "client_email", "client_id"}
         found = sorted(key_data.keys())
         missing = sorted(required - set(key_data.keys()))
         if missing:
@@ -877,6 +882,10 @@ def get_db():
                 f"{missing}. Found keys: {found}. "
                 "Ensure st.secrets['gcp_service_account'] contains the full service account JSON object."
             )
+
+        private_key_id_missing = "private_key_id" not in key_data
+        if private_key_id_missing:
+            key_data = dict(key_data)
 
         private_key = key_data["private_key"]
         if not isinstance(private_key, str):
@@ -889,7 +898,16 @@ def get_db():
         if "\\n" in private_key and "\n" not in private_key:
             key_data["private_key"] = private_key.replace("\\n", "\n")
 
-        creds = ServiceAccountCredentials.from_json_keyfile_dict(key_data, scope)
+        try:
+            creds = ServiceAccountCredentials.from_json_keyfile_dict(key_data, scope)
+        except Exception as original_exc:
+            if not private_key_id_missing or GoogleCredentials is None:
+                raise
+            try:
+                creds = GoogleCredentials.from_service_account_info(key_data)
+            except Exception:
+                raise original_exc
+
         db = gspread.authorize(creds).open_by_key(SPREADSHEET_KEY)
         st.session_state["leaderboard_source"] = f"{db.title} ({db.id})"
         return db
