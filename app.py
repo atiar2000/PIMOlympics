@@ -23,7 +23,6 @@ from typing import Optional
 import pandas as pd
 import streamlit as st
 import gspread
-from google.oauth2.service_account import Credentials
 
 
 # ─────────────────────────────────────────────────────────────────
@@ -646,7 +645,7 @@ hr { border-color: var(--border) !important; margin: 2rem 0 !important; }
 # ═══════════════════════════════════════════════════════════════════
 CRISIS_POOL = [
     {
-        "title": "The Wine That Doesn't Exist",
+        "title": "The Wine That Does not Exist",
         "tag":   "MISSING DATA",
         "lead":  "A wine has just appeared in the catalog with the product name 'NULL'. It is selling. The reviews are five stars. Most of them say 'Best NULL I've ever had.' One says 'tastes like absence.'",
         "options": [
@@ -659,7 +658,7 @@ CRISIS_POOL = [
     {
         "title": "The Four-Dollar Bottle",
         "tag":   "PRICE INVALID",
-        "lead":  "A bottle that should cost four hundred dollars is listed for four. The cart counter is climbing. It is climbing faster than the system can update. Three thousand people have just discovered fine wine.",
+        "lead":  "A bottle that should cost four hundred dollars is listed for forty. The cart counter is climbing. It is climbing faster than the system can update. Three thousand people have just discovered fine wine.",
         "options": [
             {"text": "Hot-fix the price and purge the cache",                    "hp": -5,  "outcome": "Fixed in ninety seconds. Eight hundred bottles already shipped. The follow-up emails are very polite. The follow-up to those emails are less polite."},
             {"text": "Roll back this morning's deploy",                          "hp": -22, "outcome": "Price is correct. So is everything else from yesterday. Today's launches no longer exist. Tomorrow they will exist again. Nobody is excited about this."},
@@ -694,7 +693,7 @@ CRISIS_POOL = [
         "tag":   "LOCALIZATION",
         "lead":  "A single gin's name field contains its name in seven languages, comma-separated. One of them is not a gin. It is a recipe for soup. The soup is, technically, branded.",
         "options": [
-            {"text": "Split into seven properly-localized records",               "hp": -7,  "outcome": "Done correctly. One of the localized records is just the soup recipe. You delete the soup. The next morning, the soup is back. You don't know who is doing this."},
+            {"text": "Split into seven properly-localized records",               "hp": -7,  "outcome": "Done correctly. One of the localized records is just the soup recipe. You delete the soup. The next morning, the soup is back. You do not know who is doing this."},
             {"text": "Keep the first language, drop the rest",                    "hp": -3,  "outcome": "Clean. Customers in six markets complain politely. You add it to the backlog. The backlog is, technically, also seven languages long."},
             {"text": "Forward to the localization team",                         "hp": -14, "outcome": "They scheduled a kick-off. The kick-off is in November. It is May."},
             {"text": "Publish it as 'an international tasting experience'",      "hp": -22, "outcome": "Seventy percent of customers in one specific market loved it. The market is the one that speaks the soup language. The soup is now a top product."},
@@ -730,7 +729,7 @@ CRISIS_POOL = [
             {"text": "Run the brand normalization workflow",                      "hp": -4,  "outcome": "Cleaned. The brand sends a polite email correcting your canonical spelling. You explain. They correct you back. You stop responding. You do not stop thinking about it."},
             {"text": "Manually fix all forty-seven by hand",                      "hp": -25, "outcome": "Ninety minutes. You have learned nothing transferable. You feel a quiet peace that surprises you."},
             {"text": "Auto-merge via fuzzy matching",                            "hp": -8,  "outcome": "Forty-six correct. One merged with a different brand entirely. That brand is now gin. The market accepts this. The market is forgiving."},
-            {"text": "Leave it, customers don't search exactly",                  "hp": -20, "outcome": "Customers do search exactly. Conversion drops twelve percent. The drop is small enough to blame on anything. It is not anything else."},
+            {"text": "Leave it, customers do not search exactly",                  "hp": -20, "outcome": "Customers do search exactly. Conversion drops twelve percent. The drop is small enough to blame on anything. It is not anything else."},
         ],
     },
     {
@@ -783,7 +782,7 @@ CRISIS_POOL = [
         "lead":  "You fixed a product name yesterday. It changed back overnight. You fixed it again this morning. It changed back at lunch. You are now in a six-hour standoff with an automated job nobody can find. You are losing.",
         "options": [
             {"text": "Find and disable the job",                                  "hp": -7,  "outcome": "Found after an hour. The job is from 2019. Three other workflows depend on it. One of them is critical. The critical one cannot explain what it does."},
-            {"text": "Override at a deeper layer the job can't touch",            "hp": -4,  "outcome": "Worked. The job now runs and quietly fails. The job will run and quietly fail for the next nine years. You will not investigate."},
+            {"text": "Override at a deeper layer the job ca not touch",            "hp": -4,  "outcome": "Worked. The job now runs and quietly fails. The job will run and quietly fail for the next nine years. You will not investigate."},
             {"text": "Match the format the job expects",                          "hp": -10, "outcome": "The job is happy. The product name is correct. The name is also legally questionable. Legal will mention this eventually."},
             {"text": "Accept the change. It clearly wants something",            "hp": -25, "outcome": "The job got bolder. It started changing other products. Some of them are now also named what it likes. What it likes is hard to describe."},
         ],
@@ -835,7 +834,7 @@ META_CRISIS = {
 # Using google-auth (modern) instead of the deprecated oauth2client.
 # gspread.authorize() works with google-auth Credentials objects.
 # NOT cached — so each call gets a fresh connection and failures
-# don't stay stuck in the Streamlit resource cache.
+# do not stay stuck in the Streamlit resource cache.
 # ═══════════════════════════════════════════════════════════════════
 
 SHEET_NAME     = "PIM_Odyssey_DB"   # must match the Google Sheet name exactly
@@ -901,8 +900,8 @@ def diagnose_db() -> list[dict]:
     except gspread.exceptions.SpreadsheetNotFound:
         steps.append({"ok": False, "label": f"Spreadsheet '{SHEET_NAME}' found",
                       "detail": (
-                          f"Not found. Either the sheet isn't named exactly '{SHEET_NAME}', "
-                          f"or it hasn't been shared with the service account email above."
+                          f"Not found. Either the sheet is not named exactly '{SHEET_NAME}', "
+                          f"or it has not been shared with the service account email above."
                       )})
         return steps
     except Exception as e:
@@ -1125,7 +1124,7 @@ def render_confetti(pieces: int = 60):
 # ═══════════════════════════════════════════════════════════════════
 def screen_intro():
     st.markdown('<div class="eyebrow">A small game about data quality</div>', unsafe_allow_html=True)
-    st.markdown('<h1><span class="kinetic">Don\'t let the catalog die.</span></h1>', unsafe_allow_html=True)
+    st.markdown('<h1><span class="kinetic">Don\'t let the Product Data Catalog dieee.</span></h1>', unsafe_allow_html=True)
     st.markdown(
         '<p style="color: var(--text-mute); font-size: 1.05rem; line-height: 1.7; margin-top: 0.3rem;">'
         'Eight things go wrong. You handle each one. The cost is shown before you pick. '
@@ -1218,7 +1217,7 @@ def screen_outcome():
     """
     c = st.session_state.last_choice
     if c is None:
-        # safety net — shouldn't happen, but if it does, recover gracefully
+        # safety net — should not happen, but if it does, recover gracefully
         goto("crisis")
         return
 
@@ -1345,6 +1344,7 @@ def screen_end():
         init_state()
         start_run(kept_name)
     st.markdown('</div>', unsafe_allow_html=True)
+
 
 # ═══════════════════════════════════════════════════════════════════
 # ROUTER
