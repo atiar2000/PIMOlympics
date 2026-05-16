@@ -17,6 +17,7 @@ from __future__ import annotations
 
 import random
 import time
+from collections.abc import Mapping
 from datetime import datetime
 from typing import Optional
 
@@ -847,6 +848,8 @@ def get_db():
                     "Leaderboard service account secret is a string but not valid JSON. "
                     "Check st.secrets configuration."
                 ) from e
+        if isinstance(key_data, Mapping) and not isinstance(key_data, dict):
+            key_data = dict(key_data)
         if not isinstance(key_data, dict):
             raise ValueError("Leaderboard service account secret must be a JSON object/dict.")
 
