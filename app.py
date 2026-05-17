@@ -1245,7 +1245,7 @@ def render_confetti(pieces: int = 60):
 # SCREENS
 # ═══════════════════════════════════════════════════════════════════
 def screen_intro():
-    st.markdown('<div class="eyebrow">A small game about data quality</div>', unsafe_allow_html=True)
+    st.markdown('<div class="eyebrow">A small fun game about Product Data Quality</div>', unsafe_allow_html=True)
     st.markdown('<h1><span class="kinetic">Don\'t let the Product Data Catalog dieee.</span></h1>', unsafe_allow_html=True)
     st.markdown(
         '<p style="color: var(--text-mute); font-size: 1.05rem; line-height: 1.7; margin-top: 0.3rem;">'
