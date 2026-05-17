@@ -647,168 +647,288 @@ hr { border-color: var(--border) !important; margin: 2rem 0 !important; }
 # ═══════════════════════════════════════════════════════════════════
 CRISIS_POOL = [
     {
-        "title": "The Wine That Does not Exist",
+        "title": "The Wine That Does Not Exist",
         "tag":   "MISSING DATA",
-        "lead":  "A wine has just appeared in the catalog with the product name 'NULL'. It is selling. The reviews are five stars. Most of them say 'Best NULL I've ever had.' One says 'tastes like absence.'",
+        "lead":  "A wine has just appeared in the catalog with the product name NULL. It is selling. The reviews are five stars. Most say Best NULL I have ever had. One says tastes like absence. Abhilash checks the data pipeline and sends a very thorough message about it.",
         "options": [
-            {"text": "Delete the NULL product",                                  "hp": -8,  "outcome": "Done. Customer support gets emails from people demanding the NULL back. They miss it. They have written poetry about it."},
-            {"text": "Rename it to 'Mystery Wine' and double the price",         "hp": -3,  "outcome": "Sold out in fifteen minutes. You have invented a category. People are asking for a follow-up. There is now a roadmap item called 'Mystery Wine Phase Two'."},
-            {"text": "Add a NOT NULL check to the validator going forward",       "hp": -2,  "outcome": "Boring. Effective. Three weeks later someone submits a product named 'undefined'. The validator accepts it. The validator was very specific."},
-            {"text": "Leave it. It's thriving",                                   "hp": -25, "outcome": "It became the bestseller. Then someone wrote an article. The article asks how this is happening. You do not have a satisfying answer."},
+            {"text": "Delete the NULL product",
+             "hp": -8,
+             "outcome": "Done. Customer support gets emails from people demanding the NULL back. They miss it. They have written poetry about it. Abhilash updates the pipeline to prevent this next time and documents it properly."},
+            {"text": "Rename it to Mystery Wine and double the price",
+             "hp": -3,
+             "outcome": "Sold out in fifteen minutes. You have invented a category. There is now a roadmap item called Mystery Wine Phase Two. Roshan marks the PR approved and says nothing else."},
+            {"text": "Add a NOT NULL check to the validator",
+             "hp": -2,
+             "outcome": "Boring. Effective. Roshan reviews the pull request in under five minutes, which is a record. Three weeks later someone submits a product named undefined. The validator accepts it. The validator was very specific."},
+            {"text": "Leave it. It is thriving",
+             "hp": -25,
+             "outcome": "It became the bestseller. Then someone wrote an article asking how this happened. Abhilash has an answer. The answer is long. It has diagrams. The diagrams are accurate."},
         ],
     },
     {
         "title": "The Four-Dollar Bottle",
         "tag":   "PRICE INVALID",
-        "lead":  "A bottle that should cost four hundred dollars is listed for forty. The cart counter is climbing. It is climbing faster than the system can update. Three thousand people have just discovered fine wine.",
+        "lead":  "A bottle that should cost four hundred dollars is listed for forty. Yang spots it first on the monitoring dashboard and sends a single message: uh. The cart counter is climbing faster than the system can update.",
         "options": [
-            {"text": "Hot-fix the price and purge the cache",                    "hp": -5,  "outcome": "Fixed in ninety seconds. Eight hundred bottles already shipped. The follow-up emails are very polite. The follow-up to those emails are less polite."},
-            {"text": "Roll back this morning's deploy",                          "hp": -22, "outcome": "Price is correct. So is everything else from yesterday. Today's launches no longer exist. Tomorrow they will exist again. Nobody is excited about this."},
-            {"text": "Honor the sales, fix forward",                              "hp": -3,  "outcome": "Small loss, large amount of trust earned. Nobody will remember this in your performance review. Trust does not show up in spreadsheets."},
-            {"text": "Call it a flash sale",                                     "hp": -45, "outcome": "It worked for eleven thrilling minutes. The next two hours were not thrilling. The two hours after that involved finance, twice."},
+            {"text": "Hot-fix the price and purge the cache",
+             "hp": -5,
+             "outcome": "Fixed in ninety seconds. Yang had a cache-busting script ready to go. Yang is always ready. Eight hundred bottles already shipped at the wrong price. The follow-up emails are polite. The follow-up to those emails are less polite."},
+            {"text": "Roll back this morning deploy",
+             "hp": -22,
+             "outcome": "Price is correct. So is everything from yesterday. Today launches no longer exist. Mara asks for a post-mortem. The post-mortem is scheduled. It is thorough. It has action items."},
+            {"text": "Honor the sales and fix forward",
+             "hp": -3,
+             "outcome": "Small loss, large trust earned. Yang sends a thumbs-up. Nobody will remember this in your performance review. Trust does not show up in spreadsheets."},
+            {"text": "Call it a flash sale",
+             "hp": -45,
+             "outcome": "It worked for eleven thrilling minutes. The next two hours were not thrilling. Mara schedules a retrospective. The retrospective is a full hour with a pre-read document."},
         ],
     },
     {
         "title": "Little Bobby Tables Strikes Again",
         "tag":   "SECURITY",
-        "lead":  "A new supplier's product description contains a SQL injection, an XSS payload, and what appears to be Morse code. Their preferred contact method is listed as 'carrier pigeon (trained)'.",
+        "lead":  "A new supplier product description contains a SQL injection, an XSS payload, and what appears to be Morse code. ShiChang had flagged a gap in the validator during a code review eight weeks ago. The comment had two thumbs-up reactions and no action items.",
         "options": [
-            {"text": "Sanitize, strip, escape, publish",                          "hp": -2,  "outcome": "Handled. You add the supplier to a personal watchlist that exists in a spreadsheet only you have. The spreadsheet has filters. You are proud of the filters."},
-            {"text": "Reject the entire feed",                                    "hp": -12, "outcome": "Their eight thousand other products are also rejected. Someone is going to ask why. The answer is technical and accurate and unhelpful."},
-            {"text": "Decode the Morse code first",                              "hp": -3,  "outcome": "It says: 'fix your validator'. A strange respect blooms in you. You will not act on it. You will think about it tonight."},
-            {"text": "Forward it to the security team",                          "hp": -18, "outcome": "Ticket opened. The priority is 'below lunch'. You consider lunch. Lunch is over. Lunch was hours ago."},
+            {"text": "Sanitize, strip, escape, publish",
+             "hp": -2,
+             "outcome": "Handled. ShiChang existing sanitizer catches most of it. You patch the rest. You add the supplier to a personal watchlist in a spreadsheet only you maintain. The spreadsheet has colour-coded filters. You are proud of the filters."},
+            {"text": "Reject the entire feed",
+             "hp": -12,
+             "outcome": "Their eight thousand other products are also rejected. Someone will ask why. The answer is technical, accurate, and unhelpful. ShiChang explains it better than you could."},
+            {"text": "Decode the Morse code first",
+             "hp": -3,
+             "outcome": "It says fix your validator. A strange respect blooms in you. ShiChang is vindicated. ShiChang is very gracious about being vindicated."},
+            {"text": "Forward it to the security team",
+             "hp": -18,
+             "outcome": "Ticket opened. The priority is below lunch. You consider lunch. Lunch is over. ShiChang eight-week-old comment sits there, still unresolved, quietly correct."},
         ],
     },
     {
         "title": "The Klingon Catalog",
         "tag":   "ENCODING",
-        "lead":  "Every product description in tonight's feed arrived in tlhIngan Hol. The supplier insists this is per their reading of the contract. The contract is sixty pages. The relevant clause is somewhere between page seventeen and page fifty-eight.",
+        "lead":  "Every product description in tonight feed arrived in tlhIngan Hol. The supplier insists this is per their reading of the contract. Chien built a translation pipeline last quarter that handles twelve languages. Klingon is not one of them.",
         "options": [
-            {"text": "Auto-translate via AI",                                     "hp": -5,  "outcome": "Mostly works. Two gins are now described as 'honourable battle vessels'. The vodka is described as a poem. The poem is, honestly, not bad."},
-            {"text": "Reject the feed politely",                                 "hp": -15, "outcome": "Reply received eleven days later. It is also in tlhIngan Hol. It is signed. It appears to be a longer reply than the original."},
-            {"text": "Hold everything and pause tonight's catalog publish",       "hp": -22, "outcome": "Tomorrow's homepage is thin. People notice. They have always noticed. They will mention it neutrally, in a way that is not neutral."},
-            {"text": "Publish it as a 'limited cultural experience'",            "hp": -32, "outcome": "Twelve customers loved it. Their feedback was extensive. You are now in charge of the cultural experience programme. There is no programme. There is now you."},
+            {"text": "Auto-translate via AI",
+             "hp": -5,
+             "outcome": "Mostly works. Two gins are now described as honourable battle vessels. Chien points out the vodka description is, technically, a haiku. The haiku is accurate."},
+            {"text": "Reject the feed politely",
+             "hp": -15,
+             "outcome": "Reply received eleven days later. It is also in Klingon. It is signed. Chien offers to extend the pipeline. The offer is genuine and detailed."},
+            {"text": "Hold everything and pause tonight publish",
+             "hp": -22,
+             "outcome": "Tomorrow homepage is thin. Mara mentions it in the standup. The mention sounds neutral. The mention is not neutral."},
+            {"text": "Publish it as a limited cultural experience",
+             "hp": -32,
+             "outcome": "Twelve customers loved it. Their feedback was extensive. You are now in charge of the cultural experience programme. There is no programme. There is now you and an empty Confluence page. Chien sends a supportive emoji."},
         ],
     },
     {
         "title": "The Polyglot Bottle",
         "tag":   "LOCALIZATION",
-        "lead":  "A single gin's name field contains its name in seven languages, comma-separated. One of them is not a gin. It is a recipe for soup. The soup is, technically, branded.",
+        "lead":  "A single gin name field contains its name in seven languages, comma-separated. One of them is not a gin. It is a recipe for soup. The soup is, technically, branded.",
         "options": [
-            {"text": "Split into seven properly-localized records",               "hp": -7,  "outcome": "Done correctly. One of the localized records is just the soup recipe. You delete the soup. The next morning, the soup is back. You do not know who is doing this."},
-            {"text": "Keep the first language, drop the rest",                    "hp": -3,  "outcome": "Clean. Customers in six markets complain politely. You add it to the backlog. The backlog is, technically, also seven languages long."},
-            {"text": "Forward to the localization team",                         "hp": -14, "outcome": "They scheduled a kick-off. The kick-off is in November. It is May."},
-            {"text": "Publish it as 'an international tasting experience'",      "hp": -22, "outcome": "Seventy percent of customers in one specific market loved it. The market is the one that speaks the soup language. The soup is now a top product."},
+            {"text": "Split into seven properly-localized records",
+             "hp": -7,
+             "outcome": "Done correctly. Aparna writes a test to catch this going forward. The test passes immediately. One localized record is still the soup recipe. The soup is back the next morning. Nobody knows who keeps doing this."},
+            {"text": "Keep the first language, drop the rest",
+             "hp": -3,
+             "outcome": "Clean. Customers in six markets complain politely. Aparna adds it to the backlog. The backlog is, technically, also seven languages long now."},
+            {"text": "Forward to the localization team",
+             "hp": -14,
+             "outcome": "Mara schedules a kick-off. The kick-off is in November. It is May. The soup remains in the catalog through the kick-off and the follow-up kick-off."},
+            {"text": "Publish it as an international tasting experience",
+             "hp": -22,
+             "outcome": "Seventy percent of customers in one market loved it. The market is the one that speaks the soup language. The soup is now a top product. Mara turns it into a case study. The case study is genuinely good."},
         ],
     },
     {
-        "title": "Saved Successfully (Citation Needed)",
+        "title": "Saved Successfully Citation Needed",
         "tag":   "PHANTOM WRITES",
-        "lead":  "The platform says 'Saved successfully' every time you click save. Nothing is actually saving. The success messages are confident. The data is not where you put it. You have been doing this for an hour. You are only now noticing.",
+        "lead":  "The platform says Saved successfully every time you click save. Nothing is actually saving. The success messages are confident. The data is not where you put it. You have been doing this for an hour. You are only now noticing.",
         "options": [
-            {"text": "Bypass the interface and use the API directly",             "hp": -3,  "outcome": "Worked. You become the team's accidental expert on something nobody else uses. The expertise is yours forever. Forever is a long time."},
-            {"text": "Restart everything and hope",                              "hp": -14, "outcome": "Two other services also restarted. They were not having problems. They are now."},
-            {"text": "Open a critical support ticket",                           "hp": -20, "outcome": "Acknowledged. Estimated response: seven business days. The deadline is in six hours. Seven business days does not adjust."},
-            {"text": "Wait, it usually fixes itself",                            "hp": -30, "outcome": "It did fix itself. It fixed itself wrong. Six hours later, somebody noticed. The wrongness had spread."},
+            {"text": "Bypass the interface and use the API directly",
+             "hp": -3,
+             "outcome": "Worked. Harry had built a small API wrapper for this exact scenario last month. You find it fifteen minutes after solving the problem yourself. Harry is gracious about it."},
+            {"text": "Restart everything and hope",
+             "hp": -14,
+             "outcome": "Two other services also restarted. Danish Azure pipeline was one of them. Danish is on a call with a client. Danish pauses the call. The pause is audible to everyone on the call."},
+            {"text": "Open a critical support ticket",
+             "hp": -20,
+             "outcome": "Acknowledged. Estimated response seven business days. The deadline is in six hours. Harry offers to share the API wrapper. Harry is still gracious."},
+            {"text": "Wait, it usually fixes itself",
+             "hp": -30,
+             "outcome": "It did fix itself. It fixed itself wrong. Six hours later somebody noticed. Danish had restarted his pipeline twice by then, just in case."},
         ],
     },
     {
         "title": "The Honest Supplier",
         "tag":   "INVALID TYPE",
-        "lead":  "A new supplier feed has filled the ABV field with 'depends on the day'. The notes field says 'sometimes more, sometimes less'. The price field says 'we'll figure it out'. Their cover letter was four sentences. All four were apologies.",
+        "lead":  "Ana flags it during a routine catalog check: the ABV field says depends on the day. The notes field says sometimes more, sometimes less. The price field says we will figure it out. Their cover letter was four sentences. All four were apologies.",
         "options": [
-            {"text": "Add type validation, reject malformed entries",             "hp": -3,  "outcome": "The validator caught all of it. Next week they send another feed. The new feed has numbers in it. The numbers are 'pretty close' and 'roughly accurate'."},
-            {"text": "Manually correct what you can guess",                       "hp": -10, "outcome": "You guessed nine. You got six right. Three are dangerously wrong. One product is now legally a different category."},
-            {"text": "Send the feed back with a stern note",                      "hp": -16, "outcome": "Reply received: 'fair enough'. The next feed is identical. The cover letter is shorter. The shorter cover letter is more confident."},
-            {"text": "Publish it anyway, they're a small supplier",              "hp": -38, "outcome": "Customer service got creative emails. One person ordered 'the day-depends one'. The order went through. The order is being processed."},
+            {"text": "Add type validation and reject malformed entries",
+             "hp": -3,
+             "outcome": "The validator catches everything. Roshan approves the rule with one comment: this should have existed before. It is not wrong. Ana documents the fix before you finish the pull request description."},
+            {"text": "Manually correct what you can guess",
+             "hp": -10,
+             "outcome": "You guessed nine. You got six right. Ana quietly corrects the remaining three without mentioning it. Ana has a talent for noticing things. Ana uses that talent constantly."},
+            {"text": "Send the feed back with a firm note",
+             "hp": -16,
+             "outcome": "Reply received: fair enough. The next feed is identical. The cover letter is shorter and more confident. Ana spots the same ABV issue within four minutes of it arriving."},
+            {"text": "Publish it anyway, they are a small supplier",
+             "hp": -38,
+             "outcome": "Customer service receives creative emails. One person ordered the day-depends one. The order went through. Ana writes the incident report. It is very detailed. It has a timeline."},
         ],
     },
     {
         "title": "Brand Spelled Forty-Seven Ways",
         "tag":   "NORMALIZATION",
-        "lead":  "A brand audit returns forty-seven different spellings of the same brand name in the active catalog. One is in Comic Sans. You did not think the catalog supported Comic Sans. The catalog has been hiding this.",
+        "lead":  "A brand audit that Yang ran as part of a pipeline health check returns forty-seven different spellings of the same brand name. One is in Comic Sans. Yang did not think the catalog supported Comic Sans. Yang now knows it does.",
         "options": [
-            {"text": "Run the brand normalization workflow",                      "hp": -4,  "outcome": "Cleaned. The brand sends a polite email correcting your canonical spelling. You explain. They correct you back. You stop responding. You do not stop thinking about it."},
-            {"text": "Manually fix all forty-seven by hand",                      "hp": -25, "outcome": "Ninety minutes. You have learned nothing transferable. You feel a quiet peace that surprises you."},
-            {"text": "Auto-merge via fuzzy matching",                            "hp": -8,  "outcome": "Forty-six correct. One merged with a different brand entirely. That brand is now gin. The market accepts this. The market is forgiving."},
-            {"text": "Leave it, customers do not search exactly",                  "hp": -20, "outcome": "Customers do search exactly. Conversion drops twelve percent. The drop is small enough to blame on anything. It is not anything else."},
+            {"text": "Run the brand normalization workflow",
+             "hp": -4,
+             "outcome": "Yang normalization workflow handles it perfectly. Yang already knew there were forty-seven. Yang had been waiting for someone to ask. The brand sends a polite email correcting your canonical spelling. Yang is not surprised by any of this."},
+            {"text": "Manually fix all forty-seven by hand",
+             "hp": -25,
+             "outcome": "Ninety minutes. You have learned nothing transferable. You feel a quiet peace that surprises you. Yang watches without saying anything. Yang is being very kind."},
+            {"text": "Auto-merge via fuzzy matching",
+             "hp": -8,
+             "outcome": "Forty-six correct. One brand accidentally merged with a different company. That company is now also gin. Vincy adds a unit test to the pipeline before you even notice the mistake."},
+            {"text": "Leave it, customers do not search exactly",
+             "hp": -20,
+             "outcome": "Customers do search exactly. Conversion drops twelve percent. Yang had predicted this. Yang does not say so. Yang is still being kind about it."},
         ],
     },
     {
         "title": "The Helpful Comma",
         "tag":   "DELIMITER",
-        "lead":  "A description read 'rich, smooth, oaky'. The CSV parser saw three products: 'rich', 'smooth', 'oaky'. Each is now its own SKU. Each is selling. Each has its own reviews section. The reviews are detailed.",
+        "lead":  "A description read rich, smooth, oaky. The CSV parser saw three products: rich, smooth, oaky. Each is now its own SKU. Each is selling. Each has its own reviews section. The reviews are surprisingly detailed.",
         "options": [
-            {"text": "Switch the parser to tab-separated",                       "hp": -6,  "outcome": "Solved this case. Created a new one. Three suppliers use tabs in their product names. You discover this individually, painfully, on Tuesday."},
-            {"text": "Merge the three back into one product",                    "hp": -4,  "outcome": "Customer reviews are preserved. The reviews contradict each other in interesting ways. 'rich' has different fans than 'smooth' has."},
-            {"text": "Keep them. Three is more than one",                        "hp": -28, "outcome": "Inventory tracks them separately. Three SKUs all draw from the same bottle. The same bottle. The system thinks you have three. You have one."},
-            {"text": "Properly quote the description and reimport",              "hp": -3,  "outcome": "Done. The next supplier sends descriptions wrapped in single quotes. Then the supplier after that uses smart quotes. The quotes are very smart."},
+            {"text": "Switch the parser to tab-separated",
+             "hp": -6,
+             "outcome": "Solved this case. Created a new one. Three suppliers use tabs inside their product names. Chien discovers this individually and painfully across three separate Tuesdays."},
+            {"text": "Merge the three back into one product",
+             "hp": -4,
+             "outcome": "Customer reviews preserved. They contradict each other in interesting ways. Chien notices the inventory still tracks them as three items. Chien fixes it without saying anything. Chien is efficient like this."},
+            {"text": "Keep them, three products is more than one",
+             "hp": -28,
+             "outcome": "Three SKUs all draw from the same physical bottle. The system believes you have three. Chien monitoring dashboard shows one. The discrepancy is not a small one."},
+            {"text": "Properly quote the description and reimport",
+             "hp": -3,
+             "outcome": "Done. Aparna adds CSV quoting validation to the shared library that same afternoon. Aparna has just prevented seventeen future incidents that nobody will ever know almost happened."},
         ],
     },
     {
         "title": "The Cleaning Aisle Cabernet",
         "tag":   "ASSET DRIFT",
-        "lead":  "A premium wine is showing the product image of a household cleaning chemical. The chemical is bleach. The CDN insists the image has always been like this. A customer has written a column. The column is well-written.",
+        "lead":  "A premium wine is displaying the product image of a household cleaning chemical. The chemical is bleach. Ana spotted it during a catalog spot-check and sent a screenshot before you had your first coffee. The CDN insists this image has always been correct.",
         "options": [
-            {"text": "Purge the CDN cache for that product",                      "hp": -2,  "outcome": "Fixed in six seconds. A few people saw it. They told their friends. Their friends made memes. The memes are pretty good actually."},
-            {"text": "Wait twenty-four hours for the cache to expire",          "hp": -22, "outcome": "Twenty-four hours is enough time for someone to write a thing. They write a thing. The thing has photographs."},
-            {"text": "Reupload the image with a fresh filename",                 "hp": -6,  "outcome": "Worked. There are now two copies of the image in storage. The old one is cached somewhere. It will come back. It always comes back."},
-            {"text": "Post that it's a brave new pairing",                       "hp": -35, "outcome": "Some loved the joke. The wine brand did not. The wine brand has lawyers. The lawyers have schedules."},
+            {"text": "Purge the CDN cache for that product",
+             "hp": -2,
+             "outcome": "Fixed in six seconds. Ana had already written the incident report. It has a root cause section. The root cause section has sub-sections. It is a very complete document."},
+            {"text": "Wait twenty-four hours for the cache to expire",
+             "hp": -22,
+             "outcome": "A customer writes about the experience publicly. Ana sends the link to the team channel with no comment. The silence is sufficient."},
+            {"text": "Reupload the image with a fresh filename",
+             "hp": -6,
+             "outcome": "Worked. The old image is still cached somewhere. Ana adds it to the monitoring follow-up list. The follow-up list is well-maintained and colour-coded."},
+            {"text": "Post that it is a brave new product pairing",
+             "hp": -35,
+             "outcome": "Some people enjoyed the joke online. The wine brand did not. They have a legal contact. Ana reads the correspondence carefully. Ana does not share her opinion. Ana is professional."},
         ],
     },
     {
         "title": "The Confident Translation",
         "tag":   "TRANSLATION",
-        "lead":  "Auto-translation has been doing its job. Maybe too well. A tasting note 'crisp finish' has been translated to a key market as 'aggressive ending'. Sales there have collapsed in some categories. They have doubled in one specific category.",
+        "lead":  "Auto-translation has been doing its job. Maybe too well. A tasting note crisp finish has been translated to a key market as aggressive ending. ShiChang built the original translation service and is quick to clarify that aggressive ending was nowhere in the training data.",
         "options": [
-            {"text": "Disable auto-translation entirely",                         "hp": -8,  "outcome": "Sensible. Slow. Expensive. The market recovers slowly, the way a person recovers from food poisoning."},
-            {"text": "Build a glossary for tasting notes",                       "hp": -6,  "outcome": "Took an afternoon. Saves countless incidents. Nobody else will ever know about the glossary. The glossary is the only documentation. It lives in a spreadsheet."},
-            {"text": "Issue a public correction",                                "hp": -13, "outcome": "Correction issued. It did some good. The reviews mentioning 'aggressive ending' remain searchable for the rest of time."},
-            {"text": "Lean in. Aggressive Ending is the new brand voice",        "hp": -28, "outcome": "Surprising number of supportive comments. Less surprising number of unhappy emails. Three of the unhappy emails are from the wine producer."},
+            {"text": "Disable auto-translation entirely",
+             "hp": -8,
+             "outcome": "Sensible. Slow. Expensive. The market recovers slowly. ShiChang proposes a better long-term approach. ShiChang approach is better."},
+            {"text": "Build a glossary for tasting notes",
+             "hp": -6,
+             "outcome": "Took an afternoon. Aparna adds it to the shared documentation. It is the first thing anyone has updated in the documentation this quarter. ShiChang extends the training data the same afternoon without being asked."},
+            {"text": "Issue a public correction",
+             "hp": -13,
+             "outcome": "Correction issued. It helped. The reviews mentioning aggressive ending remain searchable for the rest of recorded time. ShiChang does not read the reviews."},
+            {"text": "Lean in, aggressive ending is the new brand voice",
+             "hp": -28,
+             "outcome": "Surprising level of online support. Less surprising volume of emails. ShiChang is mentioned in none of the negative emails. This is the one thing that goes right here."},
         ],
     },
     {
         "title": "MMXXI",
         "tag":   "TYPE VS MEANING",
-        "lead":  "A wine vintage field contains the string 'MMXXI'. Investigation reveals it has been happening for six months. Roman numerals pass DQ because vintage is, somehow, free text. You suspect it has always been free text. You suspect this with a slow, settling dread.",
+        "lead":  "A wine vintage field contains the string MMXXI. Investigation reveals this has been happening for six months. Roman numerals pass data quality checks because the vintage field is, somehow, free text. You suspect it has always been free text. You suspect this with a slow, settling dread.",
         "options": [
-            {"text": "Build a Roman numeral parser into the validator",          "hp": -10, "outcome": "Took two hours. Next week, somebody submits a vintage in Mayan dates. You saw this coming. You did nothing about it. You are doing nothing about it now."},
-            {"text": "Convert this batch, set stricter rules going forward",     "hp": -4,  "outcome": "Pragmatic. Documented. Sustainable. You feel like an engineer for the rest of the afternoon."},
-            {"text": "Reject the records, bounce back to supplier",              "hp": -13, "outcome": "Supplier appeals via committee. The committee meets fortnightly. By the time it resolves, the wine is, technically, older."},
-            {"text": "Document the field as 'intentionally permissive'",          "hp": -22, "outcome": "Six months later, a vintage comes through as 'before time itself'. You read it. You sit. You consider water."},
+            {"text": "Build a Roman numeral parser into the validator",
+             "hp": -10,
+             "outcome": "Took two hours. Roshan reviews it and says interesting approach. This is the highest compliment Roshan gives. Next week a vintage arrives in Mayan dates. You saw this coming and did nothing about it."},
+            {"text": "Convert this batch and set stricter rules going forward",
+             "hp": -4,
+             "outcome": "Pragmatic. Documented. Sustainable. Vincy reviews the pull request and adds one comment: finally. It is the warmest code review you have ever received."},
+            {"text": "Reject the records and bounce them back",
+             "hp": -13,
+             "outcome": "Supplier appeals via committee. The committee meets fortnightly. Roshan attends the first session and asks two precise questions. The committee is slightly afraid of Roshan."},
+            {"text": "Document the field as intentionally permissive",
+             "hp": -22,
+             "outcome": "Six months later a vintage arrives as before time itself. You read it. You sit quietly. Vincy adds it to the data quality wall of shame. The wall of shame is a real Confluence page. It is public."},
         ],
     },
     {
         "title": "The Boomerang",
         "tag":   "WORKFLOW CONFLICT",
-        "lead":  "You fixed a product name yesterday. It changed back overnight. You fixed it again this morning. It changed back at lunch. You are now in a six-hour standoff with an automated job nobody can find. You are losing.",
+        "lead":  "You fixed a product name yesterday. It changed back overnight. You fixed it again this morning. It changed back at lunch. You are in a six-hour standoff with an automated job nobody can identify. Harry documented this job in 2021. The document has not been opened since 2021.",
         "options": [
-            {"text": "Find and disable the job",                                  "hp": -7,  "outcome": "Found after an hour. The job is from 2019. Three other workflows depend on it. One of them is critical. The critical one cannot explain what it does."},
-            {"text": "Override at a deeper layer the job ca not touch",            "hp": -4,  "outcome": "Worked. The job now runs and quietly fails. The job will run and quietly fail for the next nine years. You will not investigate."},
-            {"text": "Match the format the job expects",                          "hp": -10, "outcome": "The job is happy. The product name is correct. The name is also legally questionable. Legal will mention this eventually."},
-            {"text": "Accept the change. It clearly wants something",            "hp": -25, "outcome": "The job got bolder. It started changing other products. Some of them are now also named what it likes. What it likes is hard to describe."},
+            {"text": "Find and disable the job",
+             "hp": -7,
+             "outcome": "Found after an hour. Abhilash traces it through three data pipelines. The job is from 2019. Harry 2021 documentation is accurate but covers only half the story. Together you piece it together."},
+            {"text": "Override at a deeper layer the job cannot touch",
+             "hp": -4,
+             "outcome": "Worked. Abhilash adds the job to the monitoring dashboard immediately. The dashboard now has one more amber dot. Amber is better than red. Amber is not good."},
+            {"text": "Match the format the job expects",
+             "hp": -10,
+             "outcome": "The job is happy. The product name is correct. Harry reads the implementation notes and sends a very measured message expressing mild technical concern."},
+            {"text": "Accept the change, it clearly wants something",
+             "hp": -25,
+             "outcome": "The job got bolder. Abhilash escalates through the proper channels. Harry finds his original documentation. Page three has a section titled DO NOT DISABLE THIS. Page three was not visible in the preview."},
         ],
     },
     {
         "title": "The Cat in the Bow Tie",
         "tag":   "ASSET CONTENT",
-        "lead":  "A premium champagne's product image is a stock photo of a cat. The cat is wearing a small bow tie. The reviews mention the cat. The reviews do not mention the champagne. The cat has fans.",
+        "lead":  "A premium champagne product image is a stock photo of a cat wearing a small bow tie. The reviews mention the cat. The reviews do not mention the champagne. The cat has developed a following. Vincy knows how the cat got there. Vincy is not saying.",
         "options": [
-            {"text": "Replace the image immediately",                             "hp": -3,  "outcome": "Done. The cat is gone. Three customers email asking where the cat went. One offers to buy the cat."},
-            {"text": "Run an image-content audit across the catalog",             "hp": -11, "outcome": "Found four more animals. One is a goose. The goose is somehow on a single malt page. Nobody is taking responsibility for the goose."},
-            {"text": "Keep the cat. It clearly works",                            "hp": -8,  "outcome": "The cat outsells the previous image. Marketing wants the cat in more places. The cat is now the campaign. You wonder if you have made a mistake."},
-            {"text": "Add image validation to the ingest pipeline",               "hp": -5,  "outcome": "Built it that afternoon. Now scanning historical assets too. Within an hour you find seventeen more animals. There is a chart."},
+            {"text": "Replace the image immediately",
+             "hp": -3,
+             "outcome": "Done. The cat is gone. Three customers email asking where the cat went. One offers to purchase the cat as a concept. Vincy sends a simple thumbs-up reaction to the resolution message. Still says nothing."},
+            {"text": "Run an image-content audit across the catalog",
+             "hp": -11,
+             "outcome": "Found four more animals. One is a goose on a single malt page. Nobody is claiming the goose. Vincy has no comment on the goose specifically. Chien adds AI image validation to the CI pipeline that same afternoon."},
+            {"text": "Keep the cat, it clearly works",
+             "hp": -8,
+             "outcome": "The cat outsells the original image. Danish suggests the team name the cat. Consensus is reached in under ninety seconds. The cat is named after the oldest open ticket. The cat is officially called PROD-2847."},
+            {"text": "Add image validation to the ingest pipeline",
+             "hp": -5,
+             "outcome": "Built it that afternoon. Chien adds it to the deployment pipeline before you finish writing the PR description. Within an hour you find seventeen more asset mismatches. Vincy attends the review. Still says nothing about the original cat."},
         ],
     },
     {
         "title": "The Eight Million Views",
         "tag":   "DEMAND SYNC",
-        "lead":  "A short video of someone using three of your products in a cocktail has done eight million views. All three are currently out of stock. Site traffic is two hundred times normal. The site is, somehow, still up.",
+        "lead":  "A short video using three of your catalog products in a cocktail has reached eight million views. All three products are out of stock. Site traffic is two hundred times normal. The site is, somehow, still up. Harry is monitoring the dashboards and sending calm updates every fifteen minutes.",
         "options": [
-            {"text": "Hide the out-of-stock products immediately",                "hp": -3,  "outcome": "Smart. Conversion stays clean. The video creator notices their products vanished. They post about it. The new post does more views than the original."},
-            {"text": "Show 'back soon' badges, capture wishlists",                "hp": -2,  "outcome": "Eight thousand wishlist additions. You will be asked about this moment in meetings for the next year. You will smile in those meetings."},
-            {"text": "Mark all three as 'limited drops'",                         "hp": -6,  "outcome": "Sold four times the volume when restocked. You will be invited to talk about it at an off-site. The off-site has compulsory ice-breakers."},
-            {"text": "Leave it, customers know what out-of-stock means",          "hp": -20, "outcome": "They did not. They wrote angry reviews. Several included photographs of empty shelves. One is from a person who is now your most engaged customer."},
+            {"text": "Hide the out-of-stock products immediately",
+             "hp": -3,
+             "outcome": "Smart call. Conversion stays clean. The video creator notices the products disappeared and posts about it. The new post does more views than the original. Harry keeps sending updates. Harry is calm about all of this."},
+            {"text": "Show back soon badges and capture wishlists",
+             "hp": -2,
+             "outcome": "Eight thousand wishlist additions in under an hour. Mara turns the whole situation into a case study. The case study is excellent. You are mentioned in it twice. Both mentions are accurate and kind."},
+            {"text": "Mark all three as limited drops",
+             "hp": -6,
+             "outcome": "Sold four times the normal volume when restocked. Ati call on the limited drop strategy gets a specific mention in the next all-hands update. The mention is deserved. It feels exactly as good as it should feel."},
+            {"text": "Leave it, customers know what out-of-stock means",
+             "hp": -20,
+             "outcome": "They did not know. They wrote reviews. Several reviews included photographs of empty shelves. Mara schedules a demand-sync retrospective. It is the most attended retrospective of the year by some margin."},
         ],
     },
 ]
@@ -1149,38 +1269,11 @@ def screen_intro():
             st.warning("Please enter a name.")
     st.markdown('</div>', unsafe_allow_html=True)
 
-    # ── leaderboard with visible error ──────────────────────────────
-    st.markdown('<div class="card-label" style="margin-top: 2.5rem;">Leaderboard</div>', unsafe_allow_html=True)
-    lb, lb_err = fetch_leaderboard()
-    if lb_err:
-        st.error(f"⚠ Cannot load leaderboard: {lb_err}")
-    elif lb.empty:
-        st.caption("No scores yet — be the first.")
-    else:
+    # leaderboard — shown when available, silent when not
+    lb, _ = fetch_leaderboard()
+    if not lb.empty:
+        st.markdown('<div class="card-label" style="margin-top: 2.5rem;">Leaderboard</div>', unsafe_allow_html=True)
         st.dataframe(lb, use_container_width=True)
-
-    # ── connection diagnostic (always visible) ───────────────────────
-    with st.expander("🔌  Database connection status", expanded=lb_err is not None):
-        steps = diagnose_db()
-        for s in steps:
-            icon = "✅" if s["ok"] else "❌"
-            st.markdown(
-                f"**{icon} {s['label']}**  \n"
-                f"<span style='color: var(--text-mute); font-size: 0.88rem;'>{s['detail']}</span>",
-                unsafe_allow_html=True,
-            )
-        if all(s["ok"] for s in steps):
-            st.success("All checks passed — leaderboard is live.", icon="✅")
-        else:
-            st.markdown(
-                "**Fix checklist:**\n"
-                "1. Sheet named exactly **`PIM_Odyssey_DB`**\n"
-                "2. Tab named exactly **`Scores`**\n"
-                "3. Row 1 headers: **`Timestamp | Name | Score | Title`**\n"
-                "4. Sheet shared with the service account email (Editor role)\n"
-                "5. Google Sheets API **and** Drive API both enabled in Google Cloud\n"
-                "6. Full private key pasted in Streamlit secrets (no placeholder text)\n"
-            )
 
 
 def screen_crisis():
@@ -1320,21 +1413,15 @@ def screen_end():
             unsafe_allow_html=True,
         )
 
-    # save once
+    # save score — silent on failure
     if not st.session_state.saved:
-        ok, save_err = save_score(name, health, title)
+        save_score(name, health, title)
         st.session_state.saved = True
-        if not ok:
-            st.warning(f"⚠ Score not saved to leaderboard: {save_err}")
 
-    # leaderboard
-    st.markdown('<div class="card-label" style="margin-top: 2rem;">Leaderboard</div>', unsafe_allow_html=True)
-    lb, lb_err = fetch_leaderboard()
-    if lb_err:
-        st.error(f"⚠ Cannot load leaderboard: {lb_err}")
-    elif lb.empty:
-        st.caption("No entries yet.")
-    else:
+    # leaderboard — shown when available, silent when not
+    lb, _ = fetch_leaderboard()
+    if not lb.empty:
+        st.markdown('<div class="card-label" style="margin-top: 2rem;">Leaderboard</div>', unsafe_allow_html=True)
         st.dataframe(lb, use_container_width=True)
 
     st.markdown("<br>", unsafe_allow_html=True)
