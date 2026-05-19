@@ -31,7 +31,7 @@ POINTS_PER_CORRECT = 100
 
 st.set_page_config(
     page_title="PIM Knowledge Check",
-    page_icon="🧠",
+    page_icon="🍔",
     layout="centered",
     initial_sidebar_state="collapsed",
 )
