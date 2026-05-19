@@ -321,6 +321,7 @@ QUIZ_POOL = [
     # ── Q1 ───────────────────────────────────────────────────────
     {
         "tag": "PRODUCT DATA",
+        "gif_id": "3zhxq2ttgN6rEw8SDx",
         "question": "A product on the Dan Murphy's website has no image. Just a grey box. A customer calls and asks what the bottle looks like. What was missing from the catalog?",
         "context": "Ana spotted fourteen of these during her morning audit. Ana has a very organised morning audit.",
         "options": [
@@ -339,6 +340,7 @@ QUIZ_POOL = [
     # ── Q2 ───────────────────────────────────────────────────────
     {
         "tag": "PRODUCT DATA",
+        "gif_id": "3jbR27OLT5YJv0ewvN",
         "question": "A product description reads: 'Lorem ipsum dolor sit amet consectetur adipiscing elit.' It has been live on the website for six weeks. Twelve people bought it. What happened?",
         "context": "The twelve customers have not complained. Two left five-star reviews. The reviews do not mention the description.",
         "options": [
@@ -357,6 +359,7 @@ QUIZ_POOL = [
     # ── Q3 ───────────────────────────────────────────────────────
     {
         "tag": "ASSET VALIDATION",
+        "gif_id": "YmszCwM1FV7zCI8sgL",
         "question": "A customer clicks on a premium whiskey product. The image shown is a bottle of dishwashing liquid. Both smell vaguely of lemon. The website sees no problem. What went wrong?",
         "context": "Vincy uploaded a batch of images in 2019. Vincy has been asked about this. Vincy is not saying.",
         "options": [
@@ -375,6 +378,7 @@ QUIZ_POOL = [
     # ── Q4 ───────────────────────────────────────────────────────
     {
         "tag": "ENRICHMENT",
+        "gif_id": "1UUZFXZteyHOrxaUeT",
         "question": "A wine description on the live website says: 'This wine pairs beautifully with [INSERT FOOD PAIRING HERE].' How did this happen?",
         "context": "Chien's enrichment workflow had a timeout at exactly the wrong moment. Chien does not know this yet.",
         "options": [
@@ -393,6 +397,7 @@ QUIZ_POOL = [
     # ── Q5 ───────────────────────────────────────────────────────
     {
         "tag": "FRONTEND + PIM",
+        "gif_id": "j6NxNqo8Cs8y9aZwco",
         "question": "The PIM API returns `null` for a product name field. The website displays the word 'null' as the product name on the homepage. Forty-seven people search for 'null.' Three add it to cart. What is the actual technical bug?",
         "context": "This is the sequel to a similar incident involving a product named NULL. Same genre. Different channel. Same energy.",
         "options": [
@@ -411,6 +416,7 @@ QUIZ_POOL = [
     # ── Q6 ───────────────────────────────────────────────────────
     {
         "tag": "REFERENCE DATA",
+        "gif_id": "LO9E1dwHFgeipxKWn3",
         "question": "A product's category is set to 'Cleaning Products.' The product is a Grenache. A customer emails asking if it is safe to drink. The customer is joking. The catalog is not joking. What caused this?",
         "context": "Abhilash's pipeline moved the data faithfully from one system to another. The source system had an interesting data entry.",
         "options": [
@@ -429,6 +435,7 @@ QUIZ_POOL = [
     # ── Q7 ───────────────────────────────────────────────────────
     {
         "tag": "WORKFLOW",
+        "gif_id": "xvaaWS9zCp1FxhypGD",
         "question": "A product has been in 'Coming Soon' status since 2019. Nobody updated it. Nobody questioned it. It appears in catalog searches. What failed?",
         "context": "The product is coming. It is just taking its time. It has been taking its time for six years.",
         "options": [
@@ -447,6 +454,7 @@ QUIZ_POOL = [
     # ── Q8 ───────────────────────────────────────────────────────
     {
         "tag": "DATA QUALITY",
+        "gif_id": "l4FGt5wmYS9z2GK6A",
         "question": "A product's ABV field says 'yes.' The legal team would like a word. What type of DQ rule was missing?",
         "context": "The supplier was asked to confirm the ABV. They confirmed. The pipeline faithfully recorded the confirmation.",
         "options": [
@@ -465,6 +473,7 @@ QUIZ_POOL = [
     # ── Q9 ───────────────────────────────────────────────────────
     {
         "tag": "DATA QUALITY",
+        "gif_id": "ykSV717QxGYBA1nMvE",
         "question": "A wine's vintage year field says '2099.' Either the supplier invented time travel or someone mistyped. Which DQ rule catches this?",
         "context": "Yang spotted this in the monitoring dashboard and described it as 'interesting.' Yang's expressions cover a very wide range.",
         "options": [
@@ -483,6 +492,7 @@ QUIZ_POOL = [
     # ── Q10 ──────────────────────────────────────────────────────
     {
         "tag": "UNIT NORMALIZATION",
+        "gif_id": "eqNSqDeR52QvxiGBGG",
         "question": "You order a '750ml' bottle of wine online. It arrives. The bottle says '75cl.' You call to report the wrong size was delivered. Were you sent the wrong size?",
         "context": "The customer is very confident they were wronged. The customer is also wrong about being wronged.",
         "options": [
@@ -501,6 +511,7 @@ QUIZ_POOL = [
     # ── Q11 ──────────────────────────────────────────────────────
     {
         "tag": "PRODUCT ATTRIBUTES",
+        "gif_id": "b627RgxQUs5KspGD53",
         "question": "A product has been called 'Limited Edition' for five years. Two hundred thousand units have sold. The tag still says 'Limited Edition.' What field is lying?",
         "context": "Mara updated this once. The system reverted it. Mara does not talk about this.",
         "options": [
@@ -519,6 +530,7 @@ QUIZ_POOL = [
     # ── Q12 ──────────────────────────────────────────────────────
     {
         "tag": "ASSET CONTENT",
+        "gif_id": "AlGHT3axauYhVPety0",
         "question": "A premium champagne product page shows a stock photo of a vineyard. The product is a gin. A beautifully photographed vineyard. For a gin. What validation was missing?",
         "context": "The image is genuinely gorgeous. The gin is genuinely a gin. These facts are unrelated and yet somehow the same listing.",
         "options": [
@@ -537,6 +549,7 @@ QUIZ_POOL = [
     # ── Q13 ──────────────────────────────────────────────────────
     {
         "tag": "MANDATORY FIELDS",
+        "gif_id": "ToMjGpNuOksUiclTp4c",
         "question": "A product review says: 'I don't know what this product is. The description is empty and the image is a question mark. Five stars because the price was right.' What TWO things were missing from the catalog?",
         "context": "The customer gave five stars. The catalog did not give the customer anything to work with. This is a balanced outcome.",
         "options": [
@@ -555,6 +568,7 @@ QUIZ_POOL = [
     # ── Q14 ──────────────────────────────────────────────────────
     {
         "tag": "PRODUCT LIFECYCLE",
+        "gif_id": "3ornjSZp9jUtEFlsL6",
         "question": "A product has eleven five-star reviews and has been on sale for three years. It is still tagged as 'New Arrival.' What field was never updated?",
         "context": "Yang runs a weekly tag audit. This product survives the audit every time. Yang finds this personally interesting.",
         "options": [
@@ -573,6 +587,7 @@ QUIZ_POOL = [
     # ── Q15 ──────────────────────────────────────────────────────
     {
         "tag": "LOCALIZATION",
+        "gif_id": "3o7TKxCX1CMPsUBE3e",
         "question": "A product description is entirely in German. It is on the English Dan Murphy's website. Fourteen people bought it. Nobody noticed for two weeks. What data rule was missing?",
         "context": "ShiChang's translation pipeline processed everything except this one product. ShiChang knows why. ShiChang has not been asked.",
         "options": [
@@ -595,6 +610,7 @@ QUIZ_POOL = [
     # ── T1 ───────────────────────────────────────────────────────
     {
         "tag": "DEVELOPER MOMENT",
+        "gif_id": "Rf1J48VguE4wZpQi83",
         "question": "A developer hardcodes the product category as 'Wine' for all products to quickly fix a display bug. Beer, spirits, and RTD are now all categorised as Wine on the website. Filtering by 'Beer' returns zero results. What kind of fix is this?",
         "context": "Roshan has a document titled 'Things We Do Not Hardcode In Production.' It has twelve bullet points. This is now thirteen.",
         "options": [
@@ -613,6 +629,7 @@ QUIZ_POOL = [
     # ── T2 ───────────────────────────────────────────────────────
     {
         "tag": "DEVELOPER MOMENT",
+        "gif_id": "l0HlCV8U15grrbVaU",
         "question": "A webhook that sends product updates to the website fails silently. No errors are thrown. The website shows product data from three weeks ago. Sales keep coming in. How should this have been detected sooner?",
         "context": "Danish's Azure monitoring dashboard was configured. The alerts were set up. They went to a shared inbox that nobody opened since March.",
         "options": [
@@ -631,6 +648,7 @@ QUIZ_POOL = [
     # ── T3 ───────────────────────────────────────────────────────
     {
         "tag": "AI IN THE WILD",
+        "gif_id": "pIRO4qpUFc2y9zRg2X",
         "question": "An AI-generated product description reads: 'As an AI language model, I cannot personally taste wine, but this Shiraz is reportedly excellent.' It is live on the Dan Murphy's homepage. What should have caught this?",
         "context": "Aparna has a proofreading checklist. The checklist exists. It was not consulted before this product went live.",
         "options": [
@@ -649,6 +667,7 @@ QUIZ_POOL = [
     # ── T4 ───────────────────────────────────────────────────────
     {
         "tag": "MONITORING",
+        "gif_id": "WCUJ1NOisNj3YxXhaE",
         "question": "The daily DQ report shows zero errors. Every product passes perfectly. A developer checks the logs — the DQ engine has not run in two weeks. It is reporting from a cached result set to never expire. What does this situation demonstrate?",
         "context": "Zero errors is the best possible outcome. Zero errors because the check is not running is a different kind of outcome.",
         "options": [
@@ -667,6 +686,7 @@ QUIZ_POOL = [
     # ── T5 ───────────────────────────────────────────────────────
     {
         "tag": "WORKFLOW DESIGN",
+        "gif_id": "7vAhGb4iAEMiBOROSQ",
         "question": "A Product 360 workflow has 14 steps. Step 8 requires approval from a team member who left 18 months ago. Two hundred products are stuck waiting for their ghost approval. What is the correct fix?",
         "context": "The former team member's account is still active in the system. The system misses them. The two hundred products miss them more.",
         "options": [
@@ -685,6 +705,7 @@ QUIZ_POOL = [
     # ── T6 ───────────────────────────────────────────────────────
     {
         "tag": "PRODUCTION INCIDENT",
+        "gif_id": "l41JS0g6UPOoKV7Z6",
         "question": "A developer writes a script to bulk-update 50,000 product descriptions to the word 'test'. They run it in production instead of staging. 50,000 products now say 'test'. What should have been in place?",
         "context": "Yang's review process exists for exactly this reason. This script was not reviewed by Yang. Yang was not consulted. Yang is aware.",
         "options": [
@@ -704,6 +725,7 @@ QUIZ_POOL = [
     
     {
     "tag": "TAXONOMY & REFERENCE DATA",
+        "gif_id": "3o7aD5eEm7qVu1mpYQ",
     "question": "A supplier's data feed maps a prestigious $300 bottle of vintage Champagne to the category 'Bathroom Cleaning Products.' The system happily accepts it, and now wealthy customers are very confused about how to scrub their toilets. What PIM feature was bypassed?",
     "context": "If you let external suppliers type whatever they want into a category column without checking it, they will eventually classify a keg of beer as a root vegetable.",
     "options": [
@@ -931,6 +953,17 @@ def screen_question():
     render_hud()
     q    = current_question()
     opts = st.session_state.shuffled_opts
+
+    # GIF display — centered, rounded, above the question card
+    gif_id = q.get("gif_id", "")
+    if gif_id:
+        gif_url = f"https://media.giphy.com/media/{gif_id}/giphy.gif"
+        st.markdown(
+            f'<div style="text-align:center; margin-bottom:0.8rem;">'
+            f'<img src="{gif_url}" style="height:180px; max-width:100%; border-radius:12px; object-fit:cover; border:1px solid rgba(255,255,255,0.12);"/>'
+            f'</div>',
+            unsafe_allow_html=True,
+        )
 
     st.markdown(
         f'<div class="q-card">'
