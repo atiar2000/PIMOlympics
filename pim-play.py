@@ -326,7 +326,7 @@ QUIZ_POOL = [
         "options": [
             {"text": "A mandatory image DQ rule that blocks products from going live without a photo",
              "correct": True},
-            {"text": "A customer with a better imagination",
+            {"text": "A customer willing to buy a grey rectangle for £45 — which, to be fair, three of them did",
              "correct": False},
             {"text": "A grey box is technically an image — the validator was satisfied",
              "correct": False},
@@ -351,7 +351,7 @@ QUIZ_POOL = [
             {"text": "The copywriter submitted it ironically and the workflow approved it without reading",
              "correct": False},
         ],
-        "explanation": ""Lorem ipsum" passes basic field checks but fails content quality. The PIM team applies strict language and placeholder validation to ensure real product data.",
+        "explanation": "'Lorem ipsum' passes basic field checks but fails content quality. The PIM team applies strict language and placeholder validation to ensure real product data.",
     },
 
     # ── Q3 ───────────────────────────────────────────────────────
@@ -366,7 +366,7 @@ QUIZ_POOL = [
              "correct": False},
             {"text": "The CDN cached the dishwashing liquid image and now believes it has always been correct",
              "correct": False},
-            {"text": "Both products are technically liquids — the validator made a reasonable category decision",
+            {"text": "Both products are technically liquids and both have a citrus note. The validator was thorough in its own way.",
              "correct": False},
         ],
         "explanation": "Image-to-product validation requires content analysis — checking that the image corresponds to the product's category. Without this, a wrong file selected during a bulk upload goes live and nobody catches it until a customer notices the lemon-scented whiskey. The PIM team ensures IDQ logic that media assts are verified and approved by human utilizing Vertex-AI and Tooljet.",
@@ -380,7 +380,7 @@ QUIZ_POOL = [
         "options": [
             {"text": "The product was published before enrichment was complete — the template placeholder was never replaced",
              "correct": True},
-            {"text": "It is a very democratic wine that pairs with absolutely everything — technically accurate",
+            {"text": "It is a very inclusive wine. The bracket is a feature. The bracket invites the customer into a collaborative content experience.",
              "correct": False},
             {"text": "The copywriter meant to write the pairing, got distracted, and the workflow approved the draft",
              "correct": False},
@@ -402,10 +402,10 @@ QUIZ_POOL = [
              "correct": False},
             {"text": "The PIM returned null correctly — this is entirely a frontend problem and has nothing to do with PIM",
              "correct": False},
-            {"text": "A mandatory product name DQ rule would have blocked null at source — fixing it in PIM prevents the frontend problem entirely",
+            {"text": "The PIM team is responsible for this — the frontend rendered exactly what it received and should be congratulated for its literal accuracy",
              "correct": False},
         ],
-        "explanation": "Downstream apps shouldn't render missing data as the literal text "null". The PIM team stops this at the source using completeness rules so channels only get fully populated payloads.",
+        "explanation": "Downstream apps shouldn't render missing data as the literal text 'null'. The PIM team stops this at the source using completeness rules so channels only get fully populated payloads.",
     },
 
     # ── Q6 ───────────────────────────────────────────────────────
@@ -434,14 +434,14 @@ QUIZ_POOL = [
         "options": [
             {"text": "No lifecycle rule existed to flag or expire products stuck in a non-live state beyond a reasonable time",
              "correct": True},
-            {"text": "The product is coming — some products just need more time, and that should be respected",
+            {"text": "The product is coming. It has been coming since 2019. It will continue coming. This is its journey now, and who are we to question a journey.",
              "correct": False},
             {"text": "The workflow has fourteen stages and nobody owns stage three, which is where it stopped",
              "correct": False},
             {"text": "Mark (DL) scheduled a review meeting for this product in 2021. The meeting was rescheduled. Twice.",
              "correct": False},
         ],
-        "explanation": "Products stuck in "Coming Soon" become ghost records without expiry rules. The PIM application's automated workflows help the team proactively escalate and fix stagnant statuses",
+        "explanation": "Products stuck in 'Coming Soon' become ghost records without expiry rules. The PIM application's automated workflows help the team proactively escalate and fix stagnant statuses",
     },
 
     # ── Q8 ───────────────────────────────────────────────────────
@@ -456,10 +456,10 @@ QUIZ_POOL = [
              "correct": False},
             {"text": "A spell checker — 'yes' is spelled correctly and the validator had no further questions",
              "correct": False},
-            {"text": "A follow-up question to the supplier asking them to be slightly more specific",
+            {"text": "A follow-up to the supplier asking whether 'yes' refers to the alcohol percentage or their general enthusiasm for being a supplier",
              "correct": False},
         ],
-        "explanation": ""Yes" isn't a valid decimal for alcohol by volume (ABV). The PIM team enforces strict data-typing rules to reject invalid manual entries from supplier feeds.",
+        "explanation": "'Yes' isn't a valid decimal for alcohol by volume (ABV). The PIM team enforces strict data-typing rules to reject invalid manual entries from supplier feeds.",
     },
 
     # ── Q9 ───────────────────────────────────────────────────────
@@ -488,7 +488,7 @@ QUIZ_POOL = [
         "options": [
             {"text": "No — 750ml and 75cl are identical. 1 centilitre equals 10 millilitres.",
              "correct": True},
-            {"text": "Yes — the website said 750ml and the bottle says 75cl. Those are different numbers.",
+            {"text": "Yes — the website said 750ml and the bottle clearly says 75cl. These are not the same number. The customer knows what the same number looks like.",
              "correct": False},
             {"text": "It depends on whether the website and the warehouse use the same unit system, which they probably do not",
              "correct": False},
@@ -513,7 +513,7 @@ QUIZ_POOL = [
             {"text": "The product launch date — without it the system cannot calculate that five years have passed",
              "correct": False},
         ],
-        "explanation": " "Limited Edition" tags shouldn't last forever. The PIM application uses dynamic expiry rules to automatically strip outdated marketing labels once stock thresholds are met. (Currently Manages through Trader)",
+        "explanation": "'Limited Edition' tags shouldn't last forever. The PIM application uses dynamic expiry rules to automatically strip outdated marketing labels once stock thresholds are met. (Currently managed through Trader)",
     },
 
     # ── Q12 ──────────────────────────────────────────────────────
@@ -636,7 +636,7 @@ QUIZ_POOL = [
         "options": [
             {"text": "A human review step in the enrichment workflow before any AI-generated content is published",
              "correct": True},
-            {"text": "An AI with more confidence in its own opinions — a valid long-term product direction",
+            {"text": "An AI that can actually taste wine — it is coming, but it is not in the current sprint",
              "correct": False},
             {"text": "A text filter blocking the phrase 'As an AI language model' — this specific phrase has caused more incidents than people admit",
              "correct": False},
@@ -674,7 +674,7 @@ QUIZ_POOL = [
              "correct": True},
             {"text": "Email the former team member on their personal address and see what happens",
              "correct": False},
-            {"text": "Skip step 8 — it has been 18 months, it was probably not essential to the process",
+            {"text": "Skip step 8. It has been 18 months. Step 8 has not been missed. Step 8 does not know it is missed.",
              "correct": False},
             {"text": "Roshan uses admin access to clear the backlog, documents every action thoroughly, and calls it governance",
              "correct": False},
@@ -709,22 +709,22 @@ QUIZ_POOL = [
     "options": [
         {
             "text": "Validating inbound categories against a strict, predefined master reference list so unapproved values are rejected on ingest.",
-            "correct": true
+            "correct": True
         },
         {
             "text": "A polite, automated webhook that emails the supplier to ask if they have recently tasted the Champagne.",
-            "correct": false
+            "correct": False
         },
         {
             "text": "An AI enhancement tool that automatically updates the product's tasting notes to include 'vibrant hints of bleach and pine scrub'.",
-            "correct": false
+            "correct": False
         },
         {
             "text": "Nothing is wrong. At that price point, the Champagne is probably an exceptionally good way to descale a showerhead.",
-            "correct": false
+            "correct": False
         }
     ],
-    "explanation": "Categories must match an approved master list to prevent mapping errors. **The PIM team maintains strict reference taxonomies so bad categories get rejected on ingest.**"
+    "explanation": "Categories must match an approved master list to prevent mapping errors. The PIM team maintains strict reference taxonomies so bad categories get rejected on ingest."
 },
 
 ]
