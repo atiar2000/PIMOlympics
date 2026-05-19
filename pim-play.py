@@ -333,7 +333,7 @@ QUIZ_POOL = [
             {"text": "Ana flagged this three weeks ago in Confluence — the report is still open",
              "correct": False},
         ],
-        "explanation": "Image is a mandatory field in most PIM models. A DQ rule should block products without an approved image from reaching any live channel. Without it, blank listings reach customers — and customers call.",
+        "explanation": "Blank listings frustrate customers who expect to see what they are buying. The PIM team sets mandatory image rules to block incomplete products from ever reaching live channels.",
     },
 
     # ── Q2 ───────────────────────────────────────────────────────
@@ -351,7 +351,7 @@ QUIZ_POOL = [
             {"text": "The copywriter submitted it ironically and the workflow approved it without reading",
              "correct": False},
         ],
-        "explanation": "Basic DQ rules check if a field has content. 'Lorem ipsum' passes that test. A content quality rule — flagging known placeholder patterns or requiring a minimum number of real words — catches this before it ever reaches a customer.",
+        "explanation": ""Lorem ipsum" passes basic field checks but fails content quality. The PIM team applies strict language and placeholder validation to ensure real product data.",
     },
 
     # ── Q3 ───────────────────────────────────────────────────────
@@ -369,7 +369,7 @@ QUIZ_POOL = [
             {"text": "Both products are technically liquids — the validator made a reasonable category decision",
              "correct": False},
         ],
-        "explanation": "Image-to-product validation requires content analysis — checking that the image corresponds to the product's category. Without this, a wrong file selected during a bulk upload goes live and nobody catches it until a customer notices the lemon-scented whiskey.",
+        "explanation": "Image-to-product validation requires content analysis — checking that the image corresponds to the product's category. Without this, a wrong file selected during a bulk upload goes live and nobody catches it until a customer notices the lemon-scented whiskey. The PIM team ensures IDQ logic that media assts are verified and approved by human utilizing Vertex-AI and Tooljet.",
     },
 
     # ── Q4 ───────────────────────────────────────────────────────
@@ -387,25 +387,25 @@ QUIZ_POOL = [
             {"text": "The supplier submitted this text and the ingest pipeline preserved it faithfully — well done, pipeline",
              "correct": False},
         ],
-        "explanation": "Products in PIM often start from templates. If a workflow allows publication before enrichment is complete, those placeholders go live. A mandatory check that rejects template patterns — or a completion gate that blocks publication until all fields are enriched — prevents this.",
+        "explanation": " Unfinished template placeholders can easily slip into live catalogs. The PIM team manages over 300 Data Quality rules and complex workflows to block publication until enrichment is complete.",
     },
 
     # ── Q5 ───────────────────────────────────────────────────────
     {
-        "tag": "CONTENT VALIDATION",
-        "question": "A product description live on the website reads: 'COPY FROM DAN MURPHY'S THEN FIX LATER.' A customer screenshots it. What rule was missing?",
-        "context": "The field was non-empty. It passed the mandatory check. The mandatory check did not ask what the content said.",
+        "tag": "FRONTEND + PIM",
+        "question": "The PIM API returns `null` for a product name field. The website displays the word 'null' as the product name on the homepage. Forty-seven people search for 'null.' Three add it to cart. What is the actual technical bug?",
+        "context": "This is the sequel to a similar incident involving a product named NULL. Same genre. Different channel. Same energy.",
         "options": [
-            {"text": "A content validation rule that rejects all-caps internal notes and known placeholder patterns",
+            {"text": "The frontend renders the API value literally instead of handling null gracefully with a fallback or placeholder",
              "correct": True},
-            {"text": "It is genuinely useful advice — arguably the most honest product description ever written",
+            {"text": "'null' is a valid product name and those forty-seven customers have excellent and specific taste",
              "correct": False},
-            {"text": "A reminder in the copywriter's calendar — they had a lot going on that week",
+            {"text": "The PIM returned null correctly — this is entirely a frontend problem and has nothing to do with PIM",
              "correct": False},
-            {"text": "Roshan's code review — Roshan reviews code but not product descriptions, which is a gap worth discussing",
+            {"text": "A mandatory product name DQ rule would have blocked null at source — fixing it in PIM prevents the frontend problem entirely",
              "correct": False},
         ],
-        "explanation": "Standard mandatory field checks only verify that a field has content. 'COPY FROM DAN MURPHY'S THEN FIX LATER' passes that test. A content rule — rejecting all-caps strings, flagging internal keywords, or blocking strings containing 'TODO', 'FIX', 'COPY' — catches these before they reach a customer screenshot.",
+        "explanation": "Downstream apps shouldn't render missing data as the literal text "null". The PIM team stops this at the source using completeness rules so channels only get fully populated payloads.",
     },
 
     # ── Q6 ───────────────────────────────────────────────────────
@@ -423,7 +423,7 @@ QUIZ_POOL = [
             {"text": "A developer who had never heard of Grenache made a reasonable assumption",
              "correct": False},
         ],
-        "explanation": "Category must be validated against a master reference list — only approved values should pass. If the field accepts any text, mapping errors go undetected all the way to the customer. A reference data lookup on ingest would have rejected 'Cleaning Products' immediately.",
+        "explanation": "Categories must match an approved master list to prevent mapping errors. The PIM team maintains strict reference taxonomies so bad categories get rejected on ingest.",
     },
 
     # ── Q7 ───────────────────────────────────────────────────────
@@ -438,10 +438,10 @@ QUIZ_POOL = [
              "correct": False},
             {"text": "The workflow has fourteen stages and nobody owns stage three, which is where it stopped",
              "correct": False},
-            {"text": "Mara scheduled a review meeting for this product in 2021. The meeting was rescheduled. Twice.",
+            {"text": "Mark (DL) scheduled a review meeting for this product in 2021. The meeting was rescheduled. Twice.",
              "correct": False},
         ],
-        "explanation": "PIM workflows need lifecycle governance. A product stuck in 'Coming Soon' for more than 90 days should trigger an automated alert and a reassignment. Without expiry rules or health checks on intermediate states, ghost records accumulate quietly for years.",
+        "explanation": "Products stuck in "Coming Soon" become ghost records without expiry rules. The PIM application's automated workflows help the team proactively escalate and fix stagnant statuses",
     },
 
     # ── Q8 ───────────────────────────────────────────────────────
@@ -459,7 +459,7 @@ QUIZ_POOL = [
             {"text": "A follow-up question to the supplier asking them to be slightly more specific",
              "correct": False},
         ],
-        "explanation": "ABV is a decimal number. 'Yes' is a string. Type validation rejects it before it enters the catalog. This is one of the most common DQ failures in supplier feeds — especially when suppliers fill fields manually and treat text boxes as text boxes.",
+        "explanation": ""Yes" isn't a valid decimal for alcohol by volume (ABV). The PIM team enforces strict data-typing rules to reject invalid manual entries from supplier feeds.",
     },
 
     # ── Q9 ───────────────────────────────────────────────────────
@@ -477,7 +477,7 @@ QUIZ_POOL = [
             {"text": "Yang's weekly pipeline health check — Yang had not run it this week yet",
              "correct": False},
         ],
-        "explanation": "Range validation checks that a numeric value falls within plausible boundaries. For vintage years, anything after the current year is impossible. Setting a maximum of 'current year' and a minimum of 1800 catches time travel, typos, and optimistic suppliers.",
+        "explanation": "Range validation prevents impossible data, like a vintage year from the future. The PIM system uses dynamic range rules to automatically block typos and time-traveling suppliers. (In-Progress Work)",
     },
 
     # ── Q10 ──────────────────────────────────────────────────────
@@ -495,7 +495,7 @@ QUIZ_POOL = [
             {"text": "This is a philosophical question about whether units define reality, and the answer is complicated",
              "correct": False},
         ],
-        "explanation": "75cl = 750ml exactly. This is a unit normalization problem — the catalog and the supplier use different but equivalent units. PIM handles this with unit conversion rules so that all volumes display consistently (always ml, always the same format) regardless of how the supplier submitted them.",
+        "explanation": "Suppliers submit mixed units (75cl vs 750ml) causing messy displays. The PIM team builds automated unit conversions so customer-facing volumes are always uniform.",
     },
 
     # ── Q11 ──────────────────────────────────────────────────────
@@ -513,7 +513,7 @@ QUIZ_POOL = [
             {"text": "The product launch date — without it the system cannot calculate that five years have passed",
              "correct": False},
         ],
-        "explanation": "Attributes like 'Limited Edition' need governance — a workflow step that removes them after a set period, or a quantity-based rule that auto-removes the tag when stock exceeds a threshold. Without this, marketing labels become permanent fixtures that quietly mislead customers.",
+        "explanation": " "Limited Edition" tags shouldn't last forever. The PIM application uses dynamic expiry rules to automatically strip outdated marketing labels once stock thresholds are met. (Currently Manages through Trader)",
     },
 
     # ── Q12 ──────────────────────────────────────────────────────
@@ -531,7 +531,7 @@ QUIZ_POOL = [
             {"text": "Nothing — the champagne might have sold better with this image, so it worked out",
              "correct": False},
         ],
-        "explanation": "Image validation has two levels: technical (does it meet resolution, format, and size requirements?) and content (does it match what the product actually is?). Content validation uses AI-based classification to flag mismatches between image content and product category before they go live.",
+        "explanation": "Image validation checks both file quality and whether the picture matches the product. The PIM team uses automated Vertex AI-based content checks and human approvals to stop mismatched images from going live.",
     },
 
     # ── Q13 ──────────────────────────────────────────────────────
@@ -549,7 +549,7 @@ QUIZ_POOL = [
             {"text": "Ana's morning audit — Ana would have caught both within fifteen minutes of the product going live",
              "correct": False},
         ],
-        "explanation": "Two separate mandatory field rules were missing: one requiring a non-empty description with real content, and one requiring a valid uploaded image. Together they ensure customers have the minimum information needed to understand what they are buying — and not just the price.",
+        "explanation": "Customers need more than just a price to make a purchase. The PIM team designs workflow completion gates to ensure every product has a real description and valid image.",
     },
 
     # ── Q14 ──────────────────────────────────────────────────────
@@ -567,7 +567,7 @@ QUIZ_POOL = [
             {"text": "Nothing — 'New Arrival' is a relative concept and this product is new to someone, somewhere",
              "correct": False},
         ],
-        "explanation": "Lifecycle tags like 'New Arrival' need automatic expiry — a rule that removes the tag after 30 to 90 days, or a workflow step that flags it for review. Without this, stale badges persist for years, showing customers incorrect signals about what is actually new.",
+        "explanation": "'New Arrival' badges become misleading if left up for years. The PIM team could manage that through an Attribute but currently Its managed by PDT team manually on Trader",
     },
 
     # ── Q15 ──────────────────────────────────────────────────────
@@ -585,7 +585,7 @@ QUIZ_POOL = [
             {"text": "ShiChang's translation pipeline should have caught it — it catches everything else",
              "correct": False},
         ],
-        "explanation": "Language validation detects the language of text content and rejects or flags records where it does not match the target channel's locale. Without this, a supplier feed submitted in the wrong language passes all other DQ checks and serves customers content they cannot read.",
+        "explanation": "Supplier feeds in the wrong language ruin the customer experience. The PIM application uses locale-specific validation to ensure content always matches the target region.",
     },
 
     # ═══════════════════════════════════════════════════════════════
@@ -607,7 +607,7 @@ QUIZ_POOL = [
             {"text": "Roshan's nightmare — Roshan has read about this exact scenario. Roshan wrote the document about it.",
              "correct": False},
         ],
-        "explanation": "Hardcoding values in code instead of reading from data is a common shortcut that creates wide, silent failures. Every data value in a catalog system should come from the data layer — not from the code. Changes to categories should never require a code deploy.",
+        "explanation": "Hardcoded data causes silent failures and requires developer deploys to fix. The PIM acts as a dynamic source of truth, letting business users update categories instantly.",
     },
 
     # ── T2 ───────────────────────────────────────────────────────
@@ -625,7 +625,7 @@ QUIZ_POOL = [
             {"text": "A morning standup question: 'did anything silently break overnight?' — not automated but not a bad idea",
              "correct": False},
         ],
-        "explanation": "Silent failures are the most dangerous kind. The fix is observability — alerting on the absence of expected events, not just on error messages. A webhook that stops firing should be as loud as one that throws an exception. Alert on silence, not just on noise.",
+        "explanation": "Silent failures (like stopped webhooks) are much worse than loud errors. The PIM team configures proactive health checks to monitor for missing events, not just error messages.",
     },
 
     # ── T3 ───────────────────────────────────────────────────────
@@ -643,7 +643,7 @@ QUIZ_POOL = [
             {"text": "Aparna's proofreading checklist — it applies here, it was not consulted, Aparna is aware",
              "correct": False},
         ],
-        "explanation": "AI-generated content needs a human review gate before publishing. A simple text filter catches the most obvious cases, but the real protection is a workflow that requires a human to approve AI-generated copy before it leaves enrichment. The AI wrote a disclaimer. The workflow removed the disclaimer check.",
+        "explanation": "AI-generated content can include rogue disclaimers or hallucinations. The PIM team enforces mandatory 'human-in-the-loop' workflow gates to review AI copy before publishing. (Work in-Progress)",
     },
 
     # ── T4 ───────────────────────────────────────────────────────
@@ -661,7 +661,7 @@ QUIZ_POOL = [
             {"text": "That whoever set the cache TTL to 'never' should write a post-mortem addressed to themselves",
              "correct": False},
         ],
-        "explanation": "A DQ dashboard showing no errors when the engine has not run is more dangerous than one showing real errors — because it provides false confidence. Monitoring systems need their own health checks: alert on the last successful run time, not just on failure events. Monitor the monitor.",
+        "explanation": "A dashboard with zero errors is dangerous if the engine simply stopped running. The PIM team monitors system health to ensure data quality checks are actually executing daily.",
     },
 
     # ── T5 ───────────────────────────────────────────────────────
@@ -679,7 +679,7 @@ QUIZ_POOL = [
             {"text": "Roshan uses admin access to clear the backlog, documents every action thoroughly, and calls it governance",
              "correct": False},
         ],
-        "explanation": "Workflow steps assigned to specific individuals are a single point of failure. Best practice is to assign approval steps to roles, not people — so that when someone leaves, the role is reassigned without touching the workflow configuration. Roles outlive team members. Names do not.",
+        "explanation": "Assigning workflows to individuals causes bottlenecks when people leave. The PIM team uses Role-Based Access Control (RBAC) so approvals seamlessly outlive individual team members.",
     },
 
     # ── T6 ───────────────────────────────────────────────────────
@@ -697,26 +697,35 @@ QUIZ_POOL = [
             {"text": "Yang's review — Yang reviews everything before it runs in production. Except this. This one time.",
              "correct": False},
         ],
-        "explanation": "Bulk operations in production need multiple safeguards: a staging environment for testing, a dry-run mode that shows affected record count without making changes, a confirmation prompt showing the scope, and ideally a second reviewer before execution. One of these would have been enough.",
+        "explanation": "Blind bulk operations in production are a recipe for disaster. The PIM team uses sandbox environments and dry-runs to safely validate mass updates before committing them.",
     },
 
     # ── T7 ───────────────────────────────────────────────────────
+    
     {
-        "tag": "FRONTEND + PIM",
-        "question": "The PIM API returns `null` for a product name field. The website displays the word 'null' as the product name on the homepage. Forty-seven people search for 'null.' Three add it to cart. What is the actual technical bug?",
-        "context": "This is the sequel to a similar incident involving a product named NULL. Same genre. Different channel. Same energy.",
-        "options": [
-            {"text": "The frontend renders the API value literally instead of handling null gracefully with a fallback or placeholder",
-             "correct": True},
-            {"text": "'null' is a valid product name and those forty-seven customers have excellent and specific taste",
-             "correct": False},
-            {"text": "The PIM returned null correctly — this is entirely a frontend problem and has nothing to do with PIM",
-             "correct": False},
-            {"text": "A mandatory product name DQ rule would have blocked null at source — fixing it in PIM prevents the frontend problem entirely",
-             "correct": False},
-        ],
-        "explanation": "APIs return null to signal a missing value. Frontends must handle null gracefully — showing a placeholder, hiding the element, or falling back to a default. Rendering 'null' as text is a frontend null-handling bug. That said, a DQ rule preventing null product names would stop the problem at the source before the frontend ever sees it.",
-    },
+    "tag": "TAXONOMY & REFERENCE DATA",
+    "question": "A supplier's data feed maps a prestigious $300 bottle of vintage Champagne to the category 'Bathroom Cleaning Products.' The system happily accepts it, and now wealthy customers are very confused about how to scrub their toilets. What PIM feature was bypassed?",
+    "context": "If you let external suppliers type whatever they want into a category column without checking it, they will eventually classify a keg of beer as a root vegetable.",
+    "options": [
+        {
+            "text": "Validating inbound categories against a strict, predefined master reference list so unapproved values are rejected on ingest.",
+            "correct": true
+        },
+        {
+            "text": "A polite, automated webhook that emails the supplier to ask if they have recently tasted the Champagne.",
+            "correct": false
+        },
+        {
+            "text": "An AI enhancement tool that automatically updates the product's tasting notes to include 'vibrant hints of bleach and pine scrub'.",
+            "correct": false
+        },
+        {
+            "text": "Nothing is wrong. At that price point, the Champagne is probably an exceptionally good way to descale a showerhead.",
+            "correct": false
+        }
+    ],
+    "explanation": "Categories must match an approved master list to prevent mapping errors. **The PIM team maintains strict reference taxonomies so bad categories get rejected on ingest.**"
+},
 
 ]
 
@@ -877,23 +886,24 @@ def render_confetti():
 # SCREENS
 # ═══════════════════════════════════════════════════════════════════
 def screen_intro():
-    st.markdown('<div class="eyebrow">Before the presentation begins</div>', unsafe_allow_html=True)
+    st.markdown('<div class="eyebrow">Hello, Full Stack Fury Team !!</div>', unsafe_allow_html=True)
     st.markdown('<h1><span class="kinetic">How well do you know PIM?</span></h1>', unsafe_allow_html=True)
     st.markdown(
         '<p style="color:var(--text-mute); font-size:1.05rem; line-height:1.7; margin-top:0.3rem;">'
         '12 questions about product data, data quality, and things that have gone spectacularly wrong '
-        'in online catalogs. No penalty for wrong answers. Just honesty and a leaderboard.'
+        'in online catalogs. No penalty for wrong answers. Please participate for a fun game of PIM.'
         '</p>',
         unsafe_allow_html=True,
     )
     st.markdown(
         '<div class="glass"><div class="card-label">How it works</div>'
         '<ul style="margin:0; padding-left:1.2rem; line-height:1.9; color:var(--text-mute); font-size:0.95rem;">'
-        '<li>12 questions drawn from a pool of 22 — different combination every play</li>'
+        '<li>12 questions from a Question pool of 22 — different combination every play</li>'
         '<li>4 options per question — one is correct, three are wrong in interesting ways</li>'
         '<li><strong style="color:var(--text);">+100 points</strong> per correct answer &nbsp;·&nbsp; Maximum possible: 1,200</li>'
-        '<li>No penalty for guessing — be honest, see where you land</li>'
+        '<li>No penalty for guessing — be playful, some of our names are applied in this game !</li>'
         '<li>Leaderboard shows rankings after everyone plays</li>'
+        '<li>Are you ready ?? :) </li>'
         '</ul></div>',
         unsafe_allow_html=True,
     )
@@ -904,7 +914,7 @@ def screen_intro():
         max_chars=32,
     )
     st.markdown('<div class="primary-action">', unsafe_allow_html=True)
-    if st.button("Start the quiz"):
+    if st.button("Lets Go!"):
         if name.strip():
             start_run(name.strip())
         else:
