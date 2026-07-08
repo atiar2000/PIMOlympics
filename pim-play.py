@@ -654,15 +654,15 @@ def screen_intro():
     col1, col2 = st.columns(2)
     with col1:
         name = st.text_input(
-            "Your name on the leaderboard",
+            "Your name",
             placeholder="e.g. Roshan, Mara, chaos-agent",
             max_chars=32,
             key="intro_name",
         )
     with col2:
         email = st.text_input(
-            "Your work email (for the recognition certificate)",
-            placeholder="name@company.com",
+            "Your work email ",
+            placeholder="name@edg.com.au",
             max_chars=64,
             key="intro_email",
         )
