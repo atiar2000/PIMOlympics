@@ -431,7 +431,7 @@ QUIZ_POOL = [
 # ═══════════════════════════════════════════════════════════════════
 # DATA LAYER
 # ═══════════════════════════════════════════════════════════════════
-SHEET_NAME     = "PIM_Game"
+SHEET_NAME     = "PIM_Odyssey_DB"
 WORKSHEET_NAME = "Quiz"
 SCOPES         = [
     "https://spreadsheets.google.com/feeds",
