@@ -1,5 +1,5 @@
 """
-PIM Play 
+PIM Play — 
 by EDG PIM Team
 
 """
