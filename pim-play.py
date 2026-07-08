@@ -1,15 +1,13 @@
 """
 PIM Play 
+by EDG PIM Team
 
 """
 
 from __future__ import annotations
 
-import smtplib
 import time
 from datetime import datetime
-from email.mime.multipart import MIMEMultipart
-from email.mime.text import MIMEText
 from typing import Optional
 
 import pandas as pd
@@ -429,128 +427,6 @@ QUIZ_POOL = [
 ]
 
 
-# ═══════════════════════════════════════════════════════════════════
-# EMAIL
-# ═══════════════════════════════════════════════════════════════════
-def build_email_html(name: str, score: int, correct: int, rank: str) -> str:
-    score_pct = int(score / MAX_SCORE * 100)
-    star_row  = "⭐" * min(5, max(1, round(score_pct / 20)))
-    return f"""
-<!DOCTYPE html>
-<html>
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<style>
-  body {{ margin:0; padding:0; background:#0f1024; font-family:'Segoe UI',Arial,sans-serif; color:#ededed; }}
-  .wrap {{ max-width:600px; margin:0 auto; padding:40px 20px; }}
-  .card {{ background:linear-gradient(160deg,rgba(123,159,255,0.18) 0%,rgba(52,62,110,0.85) 100%); border:1px solid rgba(107,223,255,0.3); border-radius:20px; padding:48px 40px; text-align:center; }}
-  .glyph {{ font-size:64px; margin-bottom:8px; }}
-  .from {{ font-family:'Courier New',monospace; font-size:13px; color:#7b9fff; letter-spacing:3px; text-transform:uppercase; margin-bottom:16px; }}
-  h1 {{ font-size:32px; font-weight:800; margin:0 0 8px; color:#fafaff; letter-spacing:-0.5px; }}
-  .sub {{ font-size:16px; color:#c5c6e2; margin:0 0 36px; line-height:1.6; }}
-  .score-box {{ background:rgba(107,223,255,0.1); border:1px solid rgba(107,223,255,0.35); border-radius:14px; padding:24px; margin:24px 0; }}
-  .score-num {{ font-family:'Courier New',monospace; font-size:52px; font-weight:900; color:#6bdfff; line-height:1; }}
-  .score-label {{ font-size:13px; color:#8e90b5; letter-spacing:2px; text-transform:uppercase; margin-top:6px; }}
-  .stats {{ display:table; width:100%; margin:24px 0; }}
-  .stat-cell {{ display:table-cell; width:33%; text-align:center; padding:12px; }}
-  .stat-val {{ font-family:'Courier New',monospace; font-size:28px; font-weight:700; color:#ffd56b; }}
-  .stat-lbl {{ font-size:12px; color:#8e90b5; letter-spacing:1.5px; text-transform:uppercase; margin-top:4px; }}
-  .rank-pill {{ display:inline-block; background:rgba(255,213,107,0.15); border:1px solid rgba(255,213,107,0.45); border-radius:30px; padding:10px 24px; font-size:15px; font-weight:600; color:#ffd56b; margin:8px 0 28px; }}
-  .stars {{ font-size:28px; margin:0 0 28px; letter-spacing:4px; }}
-  .message {{ background:rgba(255,255,255,0.04); border-radius:12px; padding:24px; text-align:left; margin:28px 0; }}
-  .message p {{ margin:0 0 12px; font-size:15px; line-height:1.65; color:#c5c6e2; }}
-  .message p:last-child {{ margin:0; }}
-  .sig {{ font-size:14px; color:#8e90b5; margin-top:36px; line-height:1.7; }}
-  .sig strong {{ color:#6bdfff; }}
-  .footer-line {{ margin-top:36px; font-size:12px; color:#4a4c6a; }}
-</style>
-</head>
-<body>
-<div class="wrap">
-  <div class="card">
-    <div class="glyph">🏆</div>
-    <div class="from">EDG · PIM Team</div>
-    <h1>Well played, {name}!</h1>
-    <p class="sub">You just completed the PIM Knowledge Check.<br>Here is how you went.</p>
-
-    <div class="score-box">
-      <div class="score-num">{score}</div>
-      <div class="score-label">out of {MAX_SCORE} points</div>
-    </div>
-
-    <div class="stats">
-      <div class="stat-cell">
-        <div class="stat-val">{correct}</div>
-        <div class="stat-lbl">Correct</div>
-      </div>
-      <div class="stat-cell">
-        <div class="stat-val">{QUESTIONS_PER_PLAY - correct}</div>
-        <div class="stat-lbl">Missed</div>
-      </div>
-      <div class="stat-cell">
-        <div class="stat-val">{score_pct}%</div>
-        <div class="stat-lbl">Score</div>
-      </div>
-    </div>
-
-    <div class="rank-pill">🎖 {rank}</div>
-
-    <div class="stars">{star_row}</div>
-
-    <div class="message">
-      <p>Thank you for taking the time to play PIM Play today. Every answer — right or wrong — tells us something useful about how the team understands product data, data quality, and the catalog challenges we deal with every day.</p>
-      <p>The questions were designed to be funny but real. If the dishwashing liquid on the whiskey listing made you laugh, good. It has happened. In production. More than once.</p>
-      <p>We hope the session today gives you a clearer picture of what PIM does, why data quality rules exist, and why we care about every field in every product record.</p>
-    </div>
-
-    <div class="sig">
-      With appreciation,<br>
-      <strong>Ati &amp; the EDG PIM Team</strong><br>
-      Product Information Management · Endeavour Group
-    </div>
-
-    <div class="footer-line">
-      This email was sent automatically after you completed PIM Play.<br>
-      No catalogues were harmed in the making of this quiz.
-    </div>
-  </div>
-</div>
-</body>
-</html>
-"""
-
-
-def send_recognition_email(to_email: str, name: str, score: int, correct: int, rank: str) -> tuple[bool, str]:
-    """Send HTML recognition email via Gmail SMTP using app password from secrets."""
-    try:
-        cfg         = st.secrets["email"]
-        sender      = cfg["sender"]       # e.g. yourteam@gmail.com
-        app_password= cfg["app_password"] # Gmail App Password (16 chars)
-        display_name= cfg.get("display_name", "EDG PIM Team")
-
-        msg = MIMEMultipart("alternative")
-        msg["Subject"] = f"🏆 PIM Play — well done, {name}!"
-        msg["From"]    = f"{display_name} <{sender}>"
-        msg["To"]      = to_email
-
-        html_body = build_email_html(name, score, correct, rank)
-        msg.attach(MIMEText(html_body, "html"))
-
-        with smtplib.SMTP_SSL("smtp.gmail.com", 465, timeout=10) as server:
-            server.login(sender, app_password)
-            server.sendmail(sender, to_email, msg.as_string())
-
-        return True, ""
-    except KeyError:
-        return False, "Email secrets not configured (see setup guide)."
-    except smtplib.SMTPAuthenticationError:
-        return False, "Gmail authentication failed — check your app password."
-    except smtplib.SMTPRecipientsRefused:
-        return False, f"Email address rejected: {to_email}"
-    except Exception as e:
-        return False, str(e)
-
 
 # ═══════════════════════════════════════════════════════════════════
 # DATA LAYER
@@ -636,7 +512,6 @@ def init_state():
         "started_at":    None,
         "saved":         False,
         "email_sent":    False,
-        "email_error":   "",
     }
     for k, v in defaults.items():
         st.session_state.setdefault(k, v)
@@ -667,7 +542,6 @@ def start_run(name: str, email: str):
         "started_at":    time.time(),
         "saved":         False,
         "email_sent":    False,
-        "email_error":   "",
     })
     goto("question")
 
@@ -892,27 +766,21 @@ def screen_end():
         save_score(name, email, score, rank)
         st.session_state.saved = True
 
-    # Send recognition email once
+    # Email is handled by Google Apps Script watching the sheet.
+    # Show a friendly notice once per session.
     if not st.session_state.email_sent and email:
-        with st.spinner("Sending your recognition email..."):
-            ok, err = send_recognition_email(email, name, score, correct, rank)
-        st.session_state.email_sent  = True
-        st.session_state.email_error = err
-        if ok:
-            st.markdown(
-                f'<div class="email-sent">✓ Recognition email sent to {email} — check your inbox (and spam, just in case).</div>',
-                unsafe_allow_html=True,
-            )
-        else:
-            st.markdown(
-                f'<div class="email-fail">⚠ Could not send email: {err}</div>',
-                unsafe_allow_html=True,
-            )
-    elif st.session_state.email_sent:
-        if st.session_state.email_error:
-            st.markdown(f'<div class="email-fail">⚠ Email error: {st.session_state.email_error}</div>', unsafe_allow_html=True)
-        else:
-            st.markdown(f'<div class="email-sent">✓ Recognition email sent to {email}</div>', unsafe_allow_html=True)
+        st.session_state.email_sent = True
+        st.markdown(
+            f'<div class="email-sent">'
+            f'✉ A recognition email will be on its way to {email} shortly — sent automatically by the PIM team.' 
+            f'</div>',
+            unsafe_allow_html=True,
+        )
+    elif st.session_state.email_sent and email:
+        st.markdown(
+            f'<div class="email-sent">✉ Recognition email on its way to {email}</div>',
+            unsafe_allow_html=True,
+        )
 
     # ── ALL PLAYERS RESULTS ──────────────────────────────────────
     st.markdown("---")
