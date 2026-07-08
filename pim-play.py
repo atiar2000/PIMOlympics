@@ -431,9 +431,12 @@ QUIZ_POOL = [
 # ═══════════════════════════════════════════════════════════════════
 # DATA LAYER
 # ═══════════════════════════════════════════════════════════════════
-SHEET_NAME     = "PIM_Odyssey_DB"
-WORKSHEET_NAME = "Quiz"
-SCOPES         = [
+# ── UPDATE THIS to match your Google Sheet file name exactly ──────
+SHEET_NAME     = "PIM_Odyssey_DB"   # ← exact file name in Google Drive
+WORKSHEET_NAME = "Quiz"             # ← exact tab name inside the file
+# ─────────────────────────────────────────────────────────────────
+
+SCOPES = [
     "https://spreadsheets.google.com/feeds",
     "https://www.googleapis.com/auth/drive",
 ]
@@ -443,33 +446,68 @@ def _get_worksheet():
     creds  = Credentials.from_service_account_info(
         dict(st.secrets["gcp_service_account"]), scopes=SCOPES
     )
-    return gspread.authorize(creds).open(SHEET_NAME).worksheet(WORKSHEET_NAME)
+    client = gspread.authorize(creds)
+    return client.open(SHEET_NAME).worksheet(WORKSHEET_NAME)
 
 
-def save_score(name: str, email: str, score: int, rank: str) -> bool:
+def db_test() -> tuple[bool, str]:
+    """
+    Run on the intro screen to surface the real error message.
+    Returns (ok, message).
+    """
+    try:
+        ws      = _get_worksheet()
+        headers = ws.row_values(1)
+        return True, f"Connected · tab '{WORKSHEET_NAME}' · headers: {headers}"
+    except gspread.exceptions.SpreadsheetNotFound:
+        return False, (
+            f"Sheet not found: '{SHEET_NAME}'. "
+            "Check the name matches exactly in Google Drive (case-sensitive)."
+        )
+    except gspread.exceptions.WorksheetNotFound:
+        return False, (
+            f"Tab not found: '{WORKSHEET_NAME}'. "
+            f"Make sure a tab called exactly '{WORKSHEET_NAME}' exists inside '{SHEET_NAME}'."
+        )
+    except gspread.exceptions.APIError as e:
+        return False, (
+            f"Google API error: {e}. "
+            "Most likely the service account hasn't been given Editor access to the sheet."
+        )
+    except KeyError:
+        return False, (
+            "Missing 'gcp_service_account' in Streamlit secrets. "
+            "Go to App Settings → Secrets and check the block name is [gcp_service_account]."
+        )
+    except Exception as e:
+        return False, f"Unexpected error: {type(e).__name__}: {e}"
+
+
+def save_score(name: str, email: str, score: int, rank: str) -> tuple[bool, str]:
     try:
         _get_worksheet().append_row(
             [datetime.now().isoformat(timespec="seconds"), name, email, score, rank]
         )
-        return True
-    except Exception:
-        return False
+        return True, ""
+    except Exception as e:
+        return False, str(e)
 
 
-def fetch_all_players() -> pd.DataFrame:
-    """Return every player's best score — shown to all on end screen."""
+def fetch_all_players() -> tuple[pd.DataFrame, str]:
+    """Return (dataframe, error_message). Error is empty string on success."""
     try:
         rows = _get_worksheet().get_all_values()
         if len(rows) < 2:
-            return pd.DataFrame()
+            return pd.DataFrame(), ""
         headers = [h.strip() for h in rows[0]]
-        df = pd.DataFrame(rows[1:], columns=headers)
-        # tolerate Email column missing in older schemas
-        df = df.rename(columns={"Rank": "Title"})
+        df      = pd.DataFrame(rows[1:], columns=headers)
+        df      = df.rename(columns={"Rank": "Title"})
         if "Score" not in df.columns or "Name" not in df.columns:
-            return pd.DataFrame()
+            return pd.DataFrame(), (
+                f"Column mismatch. Found: {list(df.columns)}. "
+                "Expected: Timestamp, Name, Email, Score, Rank"
+            )
         df["Score"] = pd.to_numeric(df["Score"], errors="coerce").fillna(0).astype(int)
-        # group by Name, take best score
         out = (
             df.groupby("Name", as_index=False)
               .agg({"Score": "max", "Title": "first"})
@@ -478,9 +516,9 @@ def fetch_all_players() -> pd.DataFrame:
         )
         out.index      = out.index + 1
         out.index.name = "#"
-        return out
-    except Exception:
-        return pd.DataFrame()
+        return out, ""
+    except Exception as e:
+        return pd.DataFrame(), str(e)
 
 
 # ═══════════════════════════════════════════════════════════════════
@@ -639,9 +677,26 @@ def screen_intro():
             start_run(name.strip(), email.strip())
     st.markdown('</div>', unsafe_allow_html=True)
 
-    # existing leaderboard — shown if there are already players
-    lb = fetch_all_players()
-    if not lb.empty:
+    # ── Database connection diagnostic ──────────────────────────
+    with st.expander("Database connection check", expanded=False):
+        ok, msg = db_test()
+        if ok:
+            st.success(f"Connected: {msg}")
+        else:
+            st.error(f"Connection failed: {msg}")
+            st.caption(
+                "Common fixes:\n"
+                f"1. SHEET_NAME in code must match exactly: {SHEET_NAME}\n"
+                f"2. Tab name must be: {WORKSHEET_NAME}\n"
+                "3. Share the sheet with the service account email (Editor)\n"
+                "4. Check [gcp_service_account] block in Streamlit secrets"
+            )
+
+    # ── Leaderboard preview ───────────────────────────────────────
+    lb, lb_err = fetch_all_players()
+    if lb_err:
+        st.caption(f"Leaderboard unavailable: {lb_err}")
+    elif not lb.empty:
         st.markdown('<div class="card-label" style="margin-top:2.5rem;">Current standings</div>', unsafe_allow_html=True)
         st.dataframe(lb, use_container_width=True)
 
@@ -761,10 +816,15 @@ def screen_end():
     with c2: st.markdown(f'<div class="stat"><div class="stat-label">Correct</div><div class="stat-value">{correct}/{QUESTIONS_PER_PLAY}</div></div>', unsafe_allow_html=True)
     with c3: st.markdown(f'<div class="stat"><div class="stat-label">Time</div><div class="stat-value">{elapsed//60}m {elapsed%60:02d}s</div></div>', unsafe_allow_html=True)
 
-    # Save score once
+    # Save score once — show error if it fails
     if not st.session_state.saved:
-        save_score(name, email, score, rank)
+        save_ok, save_err = save_score(name, email, score, rank)
         st.session_state.saved = True
+        if not save_ok:
+            st.warning(
+                f"Score could not be saved to leaderboard: {save_err}  \n"
+                "Check the database connection expander on the intro screen."
+            )
 
     # Email is handled by Google Apps Script watching the sheet.
     # Show a friendly notice once per session.
@@ -787,9 +847,11 @@ def screen_end():
     st.markdown('<div class="card-label">Everyone\'s results</div>', unsafe_allow_html=True)
     st.caption("This table shows all players — refresh to see new completions as your teammates finish.")
 
-    lb = fetch_all_players()
-    if lb.empty:
-        st.caption("No other scores yet.")
+    lb, lb_err = fetch_all_players()
+    if lb_err:
+        st.warning(f"Could not load leaderboard: {lb_err}")
+    elif lb.empty:
+        st.caption("No scores yet — you are the first!")
     else:
         st.dataframe(lb, use_container_width=True)
 
