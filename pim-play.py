@@ -1,22 +1,15 @@
 """
-PIM Play
-by EDG PIM Team
+PIM Play 
 
-Pre-presentation quiz. 12 questions .
-Topics: product data, data quality, Dan Murphy's, BWS, Marketplace,
-        and things that have gone spectacularly wrong in PIM catalogs.
-
-No penalty for wrong answers. Just contribute and a leaderboard.
-
-Requires: Google Sheet tab named for leaderboard "Quiz"
-          Row 1 headers: Timestamp | Name | Score | Rank
 """
 
 from __future__ import annotations
 
-import random
+import smtplib
 import time
 from datetime import datetime
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
 from typing import Optional
 
 import pandas as pd
@@ -26,43 +19,46 @@ from google.oauth2.service_account import Credentials
 
 
 # ─────────────────────────────────────────────────────────────────
-QUESTIONS_PER_PLAY = 12
+# CONFIG
+# ─────────────────────────────────────────────────────────────────
+QUESTIONS_PER_PLAY = 5
 POINTS_PER_CORRECT = 100
+MAX_SCORE          = QUESTIONS_PER_PLAY * POINTS_PER_CORRECT   # 500
 
 st.set_page_config(
-    page_title="PIM Knowledge Check",
-    page_icon="🍔",
-    layout="centered",
-    initial_sidebar_state="collapsed",
+    page_title  = "PIM Play",
+    page_icon   = "🍔",
+    layout      = "centered",
+    initial_sidebar_state = "collapsed",
 )
 
 
 # ═══════════════════════════════════════════════════════════════════
-# STYLES — same aurora + glassmorphism, quiz blue/cyan accent
+# STYLES
 # ═══════════════════════════════════════════════════════════════════
 STYLE = """
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
 
 :root {
-    --bg-base:     #1a1d40;
-    --surface:     rgba(52, 62, 110, 0.55);
-    --surface-2:   rgba(66, 78, 128, 0.70);
-    --border:      rgba(255, 255, 255, 0.13);
-    --border-hi:   rgba(255, 255, 255, 0.27);
-    --text:        #fafaff;
-    --text-mute:   #c5c6e2;
-    --text-dim:    #8e90b5;
-    --gold:        #ffd56b;
-    --pink:        #ff6bc7;
-    --cyan:        #6bdfff;
-    --blue:        #7b9fff;
-    --green:       #5ee29c;
-    --danger:      #ff6680;
-    --correct-soft:rgba(94, 226, 156, 0.15);
-    --wrong-soft:  rgba(255, 102, 128, 0.15);
-    --quiz-accent: #7b9fff;
-    --quiz-soft:   rgba(123, 159, 255, 0.16);
+    --bg-base:      #1a1d40;
+    --surface:      rgba(52, 62, 110, 0.55);
+    --surface-2:    rgba(66, 78, 128, 0.70);
+    --border:       rgba(255, 255, 255, 0.13);
+    --border-hi:    rgba(255, 255, 255, 0.27);
+    --text:         #fafaff;
+    --text-mute:    #c5c6e2;
+    --text-dim:     #8e90b5;
+    --gold:         #ffd56b;
+    --pink:         #ff6bc7;
+    --cyan:         #6bdfff;
+    --blue:         #7b9fff;
+    --green:        #5ee29c;
+    --danger:       #ff6680;
+    --correct-soft: rgba(94, 226, 156, 0.15);
+    --wrong-soft:   rgba(255, 102, 128, 0.15);
+    --quiz-accent:  #7b9fff;
+    --quiz-soft:    rgba(123, 159, 255, 0.16);
 }
 
 .stApp { background: var(--bg-base); }
@@ -82,11 +78,11 @@ STYLE = """
     animation: aurora 20s ease-in-out infinite alternate;
 }
 @keyframes aurora {
-    0%   { transform: translate(0,0) scale(1) rotate(0deg); }
-    25%  { transform: translate(-4%,3%) scale(1.07) rotate(2deg); }
-    50%  { transform: translate(3%,-4%) scale(0.95) rotate(-2deg); }
-    75%  { transform: translate(-2%,-3%) scale(1.09) rotate(1.5deg); }
-    100% { transform: translate(2%,2%) scale(1.01) rotate(-1deg); }
+    0%   { transform: translate(0,0)    scale(1)    rotate(0deg);   }
+    25%  { transform: translate(-4%,3%) scale(1.07) rotate(2deg);   }
+    50%  { transform: translate(3%,-4%) scale(0.95) rotate(-2deg);  }
+    75%  { transform: translate(-2%,-3%)scale(1.09) rotate(1.5deg); }
+    100% { transform: translate(2%,2%)  scale(1.01) rotate(-1deg);  }
 }
 .main, .block-container { position: relative; z-index: 1; }
 
@@ -96,7 +92,7 @@ html, body, .main, [class*="css"], p, span, div, label, li {
 }
 code, .mono { font-family: 'JetBrains Mono', monospace !important; }
 .main .block-container { padding-top: 2rem; padding-bottom: 4rem; max-width: 780px; }
-h1 { font-size: 2.2rem !important; font-weight: 800 !important; letter-spacing: -0.03em !important; line-height: 1.1 !important; margin-bottom: 0.5rem !important; }
+h1 { font-size: 2.1rem !important; font-weight: 800 !important; letter-spacing: -0.03em !important; line-height: 1.1 !important; margin-bottom: 0.5rem !important; }
 
 .kinetic {
     background: linear-gradient(120deg, var(--cyan), var(--blue), var(--pink), var(--cyan));
@@ -106,7 +102,7 @@ h1 { font-size: 2.2rem !important; font-weight: 800 !important; letter-spacing: 
     -webkit-text-fill-color: transparent;
     animation: shift 5s ease-in-out infinite;
 }
-@keyframes shift { 0%,100% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } }
+@keyframes shift { 0%,100%{background-position:0% 50%;} 50%{background-position:100% 50%;} }
 
 .eyebrow {
     font-family: 'JetBrains Mono', monospace;
@@ -116,9 +112,9 @@ h1 { font-size: 2.2rem !important; font-weight: 800 !important; letter-spacing: 
     animation: rise 0.6s ease-out;
 }
 @keyframes rise {
-    0%   { opacity:0; transform:translateY(24px) scale(0.96); }
-    60%  { opacity:1; transform:translateY(-4px) scale(1.01); }
-    100% { opacity:1; transform:translateY(0) scale(1); }
+    0%  { opacity:0; transform:translateY(24px) scale(0.96); }
+    60% { opacity:1; transform:translateY(-4px)  scale(1.01); }
+    100%{ opacity:1; transform:translateY(0)      scale(1);   }
 }
 
 .glass {
@@ -140,6 +136,7 @@ h1 { font-size: 2.2rem !important; font-weight: 800 !important; letter-spacing: 
     margin-bottom: 0.8rem; font-weight: 700;
 }
 
+/* HUD */
 .hud {
     display: grid; grid-template-columns: auto 1fr auto;
     align-items: center; gap: 1.4rem;
@@ -149,34 +146,33 @@ h1 { font-size: 2.2rem !important; font-weight: 800 !important; letter-spacing: 
     -webkit-backdrop-filter: blur(24px) saturate(160%);
     animation: rise 0.5s cubic-bezier(0.34,1.4,0.5,1);
 }
-.hud-cell { font-family: 'JetBrains Mono', monospace; font-size: 0.76rem; color: var(--text-mute); letter-spacing: 0.08em; text-transform: uppercase; }
-.hud-cell .v { color: var(--text); font-weight: 700; font-size: 0.95rem; margin-left: 5px; }
-.hud-center { display: flex; align-items: center; gap: 1rem; justify-content: center; }
-
-.prog-track { width: 200px; height: 10px; background: rgba(0,0,0,0.45); border: 1px solid var(--border); border-radius: 5px; overflow: hidden; }
+.hud-cell { font-family:'JetBrains Mono',monospace; font-size:0.76rem; color:var(--text-mute); letter-spacing:0.08em; text-transform:uppercase; }
+.hud-cell .v { color:var(--text); font-weight:700; font-size:0.95rem; margin-left:5px; }
+.hud-center { display:flex; align-items:center; gap:1rem; justify-content:center; }
+.prog-track { width:200px; height:10px; background:rgba(0,0,0,0.45); border:1px solid var(--border); border-radius:5px; overflow:hidden; }
 .prog-fill {
-    height: 100%; border-radius: 4px;
-    background: linear-gradient(90deg, var(--cyan), var(--blue));
-    transition: width 0.6s cubic-bezier(0.34,1.3,0.55,1);
-    position: relative;
+    height:100%; border-radius:4px;
+    background:linear-gradient(90deg, var(--cyan), var(--blue));
+    transition:width 0.6s cubic-bezier(0.34,1.3,0.55,1);
+    position:relative;
 }
 .prog-fill::after {
-    content: ''; position: absolute; inset: 0;
-    background: linear-gradient(110deg, transparent 30%, rgba(255,255,255,0.28) 50%, transparent 70%);
-    animation: shimmer 2s linear infinite;
+    content:''; position:absolute; inset:0;
+    background:linear-gradient(110deg,transparent 30%,rgba(255,255,255,0.28) 50%,transparent 70%);
+    animation:shimmer 2s linear infinite;
 }
-@keyframes shimmer { 0% { transform:translateX(-150%); } 100% { transform:translateX(150%); } }
+@keyframes shimmer { 0%{transform:translateX(-150%);} 100%{transform:translateX(150%);} }
 .prog-label { font-family:'JetBrains Mono',monospace; font-size:0.82rem; font-weight:700; color:var(--cyan); white-space:nowrap; }
-
 .score-badge {
     font-family:'JetBrains Mono',monospace; font-size:1rem; font-weight:700;
     color:var(--gold); background:rgba(255,213,107,0.12);
     border:1px solid rgba(255,213,107,0.35); border-radius:8px;
     padding:4px 14px; letter-spacing:0.02em;
-    animation: score-pop 0.4s cubic-bezier(0.34,1.5,0.55,1);
+    animation:score-pop 0.4s cubic-bezier(0.34,1.5,0.55,1);
 }
 @keyframes score-pop { 0%{transform:scale(0.85);opacity:0.6;} 100%{transform:scale(1);opacity:1;} }
 
+/* Question card */
 .q-card {
     background: var(--surface);
     border: 1px solid var(--border); border-left: 4px solid var(--quiz-accent);
@@ -193,16 +189,16 @@ h1 { font-size: 2.2rem !important; font-weight: 800 !important; letter-spacing: 
     box-shadow: 0 28px 65px -25px rgba(0,0,0,0.8);
 }
 .q-tag {
-    display: inline-block; font-family:'JetBrains Mono',monospace;
+    display:inline-block; font-family:'JetBrains Mono',monospace;
     font-size:0.74rem; font-weight:700; color:var(--quiz-accent);
     background:var(--quiz-soft); border:1px solid rgba(123,159,255,0.42);
     border-radius:6px; padding:4px 11px; margin-bottom:0.9rem;
     letter-spacing:0.14em; animation:q-pulse 2.4s ease-out infinite;
 }
 @keyframes q-pulse {
-    0%   {box-shadow:0 0 0 0   rgba(123,159,255,0.55);}
-    70%  {box-shadow:0 0 0 9px rgba(123,159,255,0);}
-    100% {box-shadow:0 0 0 0   rgba(123,159,255,0);}
+    0%  {box-shadow:0 0 0 0   rgba(123,159,255,0.55);}
+    70% {box-shadow:0 0 0 9px rgba(123,159,255,0);}
+    100%{box-shadow:0 0 0 0   rgba(123,159,255,0);}
 }
 .q-card:hover .q-tag { animation: q-pulse 2.4s ease-out infinite, glitch 0.7s ease-in-out; }
 @keyframes glitch {
@@ -215,6 +211,7 @@ h1 { font-size: 2.2rem !important; font-weight: 800 !important; letter-spacing: 
 .q-title { font-size:1.2rem; font-weight:700; color:var(--text); margin-bottom:0.5rem; line-height:1.4; letter-spacing:-0.015em; }
 .q-subtitle { color:var(--text-mute); font-size:0.97rem; line-height:1.65; }
 
+/* Buttons */
 .stButton { width:100%; }
 .stButton button {
     width:100% !important; background:var(--surface-2) !important;
@@ -234,7 +231,7 @@ h1 { font-size: 2.2rem !important; font-weight: 800 !important; letter-spacing: 
     transform:translateY(-4px) scale(1.01) !important;
     box-shadow:0 14px 36px -10px rgba(107,223,255,0.4) !important;
 }
-.stButton button:active { transform:translateY(-1px) scale(1) !important; transition-duration:0.07s !important; }
+.stButton button:active { transform:translateY(-1px) scale(1) !important; }
 
 .primary-action .stButton button {
     background:linear-gradient(135deg, var(--cyan) 0%, var(--blue) 55%, var(--pink) 100%) !important;
@@ -249,62 +246,82 @@ h1 { font-size: 2.2rem !important; font-weight: 800 !important; letter-spacing: 
     box-shadow:0 18px 44px -12px rgba(107,223,255,0.55) !important;
 }
 
+/* Result panel */
 .result-panel {
     border-radius:16px; padding:1.6rem 1.8rem; margin:1rem 0;
     backdrop-filter:blur(24px) saturate(160%);
-    -webkit-backdrop-filter:blur(24px) saturate(160%);
     animation:rise 0.55s cubic-bezier(0.34,1.4,0.5,1);
 }
-.result-panel.correct {
-    background:var(--surface);
-    border:1.5px solid rgba(94,226,156,0.45);
-    box-shadow:0 0 0 1px rgba(94,226,156,0.1) inset, 0 20px 50px -20px rgba(94,226,156,0.22);
-}
-.result-panel.wrong {
-    background:var(--surface);
-    border:1.5px solid rgba(255,102,128,0.45);
-    box-shadow:0 0 0 1px rgba(255,102,128,0.1) inset, 0 20px 50px -20px rgba(255,102,128,0.18);
-}
+.result-panel.correct { background:var(--surface); border:1.5px solid rgba(94,226,156,0.45); box-shadow:0 0 0 1px rgba(94,226,156,0.1) inset,0 20px 50px -20px rgba(94,226,156,0.22); }
+.result-panel.wrong   { background:var(--surface); border:1.5px solid rgba(255,102,128,0.45); box-shadow:0 0 0 1px rgba(255,102,128,0.1) inset,0 20px 50px -20px rgba(255,102,128,0.18); }
 .result-verdict { font-family:'JetBrains Mono',monospace; font-size:0.84rem; font-weight:700; letter-spacing:0.12em; text-transform:uppercase; margin-bottom:0.75rem; }
 .result-verdict.correct { color:var(--green); }
 .result-verdict.wrong   { color:var(--danger); }
-.result-answer { font-size:0.95rem; color:var(--text-mute); margin-bottom:0.8rem; font-style:italic; padding-left:1rem; border-left:3px solid var(--border-hi); line-height:1.5; }
+.result-answer  { font-size:0.95rem; color:var(--text-mute); margin-bottom:0.8rem; font-style:italic; padding-left:1rem; border-left:3px solid var(--border-hi); line-height:1.5; }
 .result-explain { color:var(--text); font-size:1.02rem; line-height:1.7; margin-bottom:0.9rem; }
-.result-points { display:inline-block; font-family:'JetBrains Mono',monospace; font-size:1rem; font-weight:700; padding:6px 14px; border-radius:7px; }
+.result-points  { display:inline-block; font-family:'JetBrains Mono',monospace; font-size:1rem; font-weight:700; padding:6px 14px; border-radius:7px; }
 .result-points.earned  { color:var(--green);  background:var(--correct-soft); border:1px solid rgba(94,226,156,0.4); }
 .result-points.nothing { color:var(--danger); background:var(--wrong-soft);   border:1px solid rgba(255,102,128,0.4); }
 
+/* Banner */
 .banner {
     border-radius:18px; padding:2.4rem 1.8rem; text-align:center; margin-bottom:1.4rem;
     backdrop-filter:blur(24px) saturate(160%);
-    -webkit-backdrop-filter:blur(24px) saturate(160%);
     border:1.5px solid rgba(107,223,255,0.45);
-    background:linear-gradient(160deg, rgba(123,159,255,0.18) 0%, rgba(107,223,255,0.1) 50%, var(--surface) 100%);
+    background:linear-gradient(160deg,rgba(123,159,255,0.18) 0%,rgba(107,223,255,0.1) 50%,var(--surface) 100%);
     animation:rise 0.8s cubic-bezier(0.34,1.4,0.5,1);
 }
-.banner .glyph { font-size:3.2rem; margin-bottom:0.5rem; line-height:1; }
+.banner .glyph     { font-size:3.2rem; margin-bottom:0.5rem; line-height:1; }
 .banner .name-line { font-family:'JetBrains Mono',monospace; font-size:0.8rem; color:var(--gold); letter-spacing:0.14em; text-transform:uppercase; margin-bottom:0.5rem; font-weight:700; }
-.banner .title  { font-size:1.85rem; font-weight:800; color:var(--text); margin-bottom:0.6rem; letter-spacing:-0.025em; line-height:1.15; }
-.banner .subtitle { color:var(--text-mute); font-size:1rem; line-height:1.65; max-width:500px; margin:0 auto; }
+.banner .title     { font-size:1.85rem; font-weight:800; color:var(--text); margin-bottom:0.6rem; letter-spacing:-0.025em; line-height:1.15; }
+.banner .subtitle  { color:var(--text-mute); font-size:1rem; line-height:1.65; max-width:500px; margin:0 auto; }
 
-.stat { background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:1.1rem 1.2rem; text-align:center; backdrop-filter:blur(24px) saturate(160%); -webkit-backdrop-filter:blur(24px) saturate(160%); transition:border-color 0.25s ease, transform 0.25s ease; animation:rise 0.5s cubic-bezier(0.34,1.4,0.5,1) backwards; }
+/* Stat tiles */
+.stat { background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:1.1rem 1.2rem; text-align:center; backdrop-filter:blur(24px) saturate(160%); transition:border-color 0.25s ease, transform 0.25s ease; animation:rise 0.5s cubic-bezier(0.34,1.4,0.5,1) backwards; }
 .stat:hover { border-color:var(--border-hi); transform:translateY(-4px); }
 .stat:nth-of-type(1){animation-delay:0.05s;} .stat:nth-of-type(2){animation-delay:0.12s;} .stat:nth-of-type(3){animation-delay:0.19s;}
 .stat .stat-label { font-family:'JetBrains Mono',monospace; font-size:0.72rem; color:var(--text-mute); letter-spacing:0.14em; text-transform:uppercase; margin-bottom:0.5rem; font-weight:600; }
 .stat .stat-value { font-family:'JetBrains Mono',monospace; font-size:1.8rem; font-weight:800; color:var(--text); letter-spacing:-0.02em; }
 .stat .stat-value.small { font-size:1rem; line-height:1.35; }
 
+/* Confetti */
 .confetti-container { position:fixed; inset:0; pointer-events:none; z-index:999; overflow:hidden; }
 .confetti { position:absolute; top:-30px; border-radius:2px; opacity:0.95; animation:confetti-fall 5s linear forwards; }
 @keyframes confetti-fall { 0%{transform:translateY(0) rotate(0deg);opacity:1;} 100%{transform:translateY(110vh) rotate(900deg);opacity:0;} }
 
-.stTextInput input { background:var(--surface-2) !important; color:var(--text) !important; border:1px solid var(--border-hi) !important; border-radius:10px !important; font-size:1rem !important; padding:0.8rem 1rem !important; backdrop-filter:blur(14px); transition:border-color 0.25s ease, box-shadow 0.25s ease !important; }
+/* Inputs */
+.stTextInput input {
+    background:var(--surface-2) !important; color:var(--text) !important;
+    border:1px solid var(--border-hi) !important; border-radius:10px !important;
+    font-size:1rem !important; padding:0.8rem 1rem !important;
+    transition:border-color 0.25s ease, box-shadow 0.25s ease !important;
+}
 .stTextInput input:focus { border-color:var(--cyan) !important; box-shadow:0 0 0 5px rgba(107,223,255,0.15) !important; outline:none !important; }
 .stTextInput input::placeholder { color:var(--text-dim) !important; }
 .stTextInput label { color:var(--text-mute) !important; font-size:0.88rem !important; font-weight:600 !important; }
 
+/* Dataframe */
 [data-testid="stDataFrame"] { background:var(--surface); border:1px solid var(--border); border-radius:14px; overflow:hidden; backdrop-filter:blur(20px); transition:border-color 0.25s ease; }
 [data-testid="stDataFrame"]:hover { border-color:var(--border-hi); }
+
+/* Email status */
+.email-sent {
+    background:rgba(94,226,156,0.12); border:1px solid rgba(94,226,156,0.4);
+    border-radius:10px; padding:0.85rem 1.2rem; margin-top:1rem;
+    font-family:'JetBrains Mono',monospace; font-size:0.85rem; color:var(--green);
+    animation:rise 0.5s cubic-bezier(0.34,1.4,0.5,1);
+}
+.email-fail {
+    background:rgba(255,102,128,0.1); border:1px solid rgba(255,102,128,0.35);
+    border-radius:10px; padding:0.85rem 1.2rem; margin-top:1rem;
+    font-family:'JetBrains Mono',monospace; font-size:0.85rem; color:var(--danger);
+}
+
+/* All players table */
+.all-players {
+    background:var(--surface); border:1px solid var(--border);
+    border-radius:14px; overflow:hidden; margin-top:0.5rem;
+}
 
 hr { border-color:var(--border) !important; margin:2rem 0 !important; }
 #MainMenu, footer, header { visibility:hidden; }
@@ -314,442 +331,225 @@ hr { border-color:var(--border) !important; margin:2rem 0 !important; }
 
 
 # ═══════════════════════════════════════════════════════════════════
-# QUESTION POOL — 12 Questions per play
+# THE 5 FIXED QUESTIONS — same for every player, every time
+# Wrong answers are funny. Correct answers are real.
 # ═══════════════════════════════════════════════════════════════════
 QUIZ_POOL = [
 
-    # ── Q1 ───────────────────────────────────────────────────────
     {
-        "tag": "PRODUCT DATA",
-        "gif_id": "3zhxq2ttgN6rEw8SDx",
-        "question": "A product on the Dan Murphy's website has no image. Just a grey box. A customer calls and asks what the bottle looks like. What was missing from the catalog?",
-        "context": "Ana spotted fourteen of these during her morning audit. Ana has a very organised morning audit.",
+        "tag":      "ASSET VALIDATION",
+        "gif_id":   "YmszCwM1FV7zCI8sgL",
+        "question": "A customer clicks on a premium whiskey. The product image is a bottle of dishwashing liquid. Both smell faintly of lemon. The website sees absolutely no problem. What went wrong?",
+        "context":  "Vincy uploaded a batch of images in 2019. Vincy has been asked about this. Vincy is not saying.",
         "options": [
-            {"text": "A mandatory image DQ rule that blocks products from going live without a photo",
+            {"text": "An image was mapped to the wrong product during bulk upload — no content validation existed to catch the mismatch",
              "correct": True},
-            {"text": "A customer willing to buy a grey rectangle for £45 — which, to be fair, three of them did",
+            {"text": "The dishwashing liquid is extremely premium. Both products belong in the same tax bracket now.",
              "correct": False},
-            {"text": "A grey box is technically an image — the validator was satisfied",
+            {"text": "The CDN has been caching the dishwashing liquid since 2019 and at this point considers it canon",
              "correct": False},
-            {"text": "Ana flagged this three weeks ago in Confluence — the report is still open",
+            {"text": "Both are technically liquids. The system made a brave, liquid-forward categorisation decision.",
              "correct": False},
         ],
-        "explanation": "Blank listings frustrate customers who expect to see what they are buying. The PIM team sets mandatory image rules to block incomplete products from ever reaching live channels.",
+        "explanation": "Image-to-product validation checks that an uploaded image matches the product category. Without it, a wrong file from a bulk upload goes live and stays live until a customer notices the lemon-scented whiskey. The PIM team uses Vertex AI and human approval to validate all media assets.",
     },
 
-    # ── Q2 ───────────────────────────────────────────────────────
     {
-        "tag": "PRODUCT DATA",
-        "gif_id": "3jbR27OLT5YJv0ewvN",
-        "question": "A product description reads: 'Lorem ipsum dolor sit amet consectetur adipiscing elit.' It has been live on the website for six weeks. Twelve people bought it. What happened?",
-        "context": "The twelve customers have not complained. Two left five-star reviews. The reviews do not mention the description.",
-        "options": [
-            {"text": "A placeholder description was published without being replaced — the field was non-empty so it passed the mandatory check",
-             "correct": True},
-            {"text": "It is a premium Latin-language product for a very specific market segment",
-             "correct": False},
-            {"text": "ShiChang's translation pipeline mistakenly converted English into Lorem",
-             "correct": False},
-            {"text": "The copywriter submitted it ironically and the workflow approved it without reading",
-             "correct": False},
-        ],
-        "explanation": "'Lorem ipsum' passes basic field checks but fails content quality. The PIM team applies strict language and placeholder validation to ensure real product data.",
-    },
-
-    # ── Q3 ───────────────────────────────────────────────────────
-    {
-        "tag": "ASSET VALIDATION",
-        "gif_id": "YmszCwM1FV7zCI8sgL",
-        "question": "A customer clicks on a premium whiskey product. The image shown is a bottle of dishwashing liquid. Both smell vaguely of lemon. The website sees no problem. What went wrong?",
-        "context": "Vincy uploaded a batch of images in 2019. Vincy has been asked about this. Vincy is not saying.",
-        "options": [
-            {"text": "An image was mapped to the wrong product during a bulk upload — no image-content validation existed to catch the mismatch",
-             "correct": True},
-            {"text": "The whiskey and dishwashing liquid share the same SKU prefix, which confused the asset system",
-             "correct": False},
-            {"text": "The CDN cached the dishwashing liquid image and now believes it has always been correct",
-             "correct": False},
-            {"text": "Both products are technically liquids and both have a citrus note. The validator was thorough in its own way.",
-             "correct": False},
-        ],
-        "explanation": "Image-to-product validation requires content analysis — checking that the image corresponds to the product's category. Without this, a wrong file selected during a bulk upload goes live and nobody catches it until a customer notices the lemon-scented whiskey. The PIM team ensures IDQ logic that media assts are verified and approved by human utilizing Vertex-AI and Tooljet.",
-    },
-
-    # ── Q4 ───────────────────────────────────────────────────────
-    {
-        "tag": "ENRICHMENT",
-        "gif_id": "1UUZFXZteyHOrxaUeT",
-        "question": "A wine description on the live website says: 'This wine pairs beautifully with [INSERT FOOD PAIRING HERE].' How did this happen?",
-        "context": "Chien's enrichment workflow had a timeout at exactly the wrong moment. Chien does not know this yet.",
-        "options": [
-            {"text": "The product was published before enrichment was complete — the template placeholder was never replaced",
-             "correct": True},
-            {"text": "It is a very inclusive wine. The bracket is a feature. The bracket invites the customer into a collaborative content experience.",
-             "correct": False},
-            {"text": "The copywriter meant to write the pairing, got distracted, and the workflow approved the draft",
-             "correct": False},
-            {"text": "The supplier submitted this text and the ingest pipeline preserved it faithfully — well done, pipeline",
-             "correct": False},
-        ],
-        "explanation": " Unfinished template placeholders can easily slip into live catalogs. The PIM team manages over 300 Data Quality rules and complex workflows to block publication until enrichment is complete.",
-    },
-
-    # ── Q5 ───────────────────────────────────────────────────────
-    {
-        "tag": "FRONTEND + PIM",
-        "gif_id": "j6NxNqo8Cs8y9aZwco",
-        "question": "The PIM API returns `null` for a product name field. The website displays the word 'null' as the product name on the homepage. Forty-seven people search for 'null.' Three add it to cart. What is the actual technical bug?",
-        "context": "This is the sequel to a similar incident involving a product named NULL. Same genre. Different channel. Same energy.",
-        "options": [
-            {"text": "The frontend renders the API value literally instead of handling null gracefully with a fallback or placeholder",
-             "correct": True},
-            {"text": "'null' is a valid product name and those forty-seven customers have excellent and specific taste",
-             "correct": False},
-            {"text": "The PIM returned null correctly — this is entirely a frontend problem and has nothing to do with PIM",
-             "correct": False},
-            {"text": "The PIM team is responsible for this — the frontend rendered exactly what it received and should be congratulated for its literal accuracy",
-             "correct": False},
-        ],
-        "explanation": "Downstream apps shouldn't render missing data as the literal text 'null'. The PIM team stops this at the source using completeness rules so channels only get fully populated payloads.",
-    },
-
-    # ── Q6 ───────────────────────────────────────────────────────
-    {
-        "tag": "REFERENCE DATA",
-        "gif_id": "LO9E1dwHFgeipxKWn3",
-        "question": "A product's category is set to 'Cleaning Products.' The product is a Grenache. A customer emails asking if it is safe to drink. The customer is joking. The catalog is not joking. What caused this?",
-        "context": "Abhilash's pipeline moved the data faithfully from one system to another. The source system had an interesting data entry.",
-        "options": [
-            {"text": "The category field accepted free text instead of validating against a list of approved categories",
-             "correct": True},
-            {"text": "A robust Grenache can theoretically clean surfaces — an edge case the DQ team had not considered",
-             "correct": False},
-            {"text": "Abhilash's pipeline mapped the fields correctly — the error was upstream",
-             "correct": False},
-            {"text": "A developer who had never heard of Grenache made a reasonable assumption",
-             "correct": False},
-        ],
-        "explanation": "Categories must match an approved master list to prevent mapping errors. The PIM team maintains strict reference taxonomies so bad categories get rejected on ingest.",
-    },
-
-    # ── Q7 ───────────────────────────────────────────────────────
-    {
-        "tag": "WORKFLOW",
-        "gif_id": "xvaaWS9zCp1FxhypGD",
-        "question": "A product has been in 'Coming Soon' status since 2019. Nobody updated it. Nobody questioned it. It appears in catalog searches. What failed?",
-        "context": "The product is coming. It is just taking its time. It has been taking its time for six years.",
-        "options": [
-            {"text": "No lifecycle rule existed to flag or expire products stuck in a non-live state beyond a reasonable time",
-             "correct": True},
-            {"text": "The product is coming. It has been coming since 2019. It will continue coming. This is its journey now, and who are we to question a journey.",
-             "correct": False},
-            {"text": "The workflow has fourteen stages and nobody owns stage three, which is where it stopped",
-             "correct": False},
-            {"text": "Mark (DL) scheduled a review meeting for this product in 2021. The meeting was rescheduled. Twice.",
-             "correct": False},
-        ],
-        "explanation": "Products stuck in 'Coming Soon' become ghost records without expiry rules. The PIM application's automated workflows help the team proactively escalate and fix stagnant statuses",
-    },
-
-    # ── Q8 ───────────────────────────────────────────────────────
-    {
-        "tag": "DATA QUALITY",
-        "gif_id": "l4FGt5wmYS9z2GK6A",
-        "question": "A product's ABV field says 'yes.' The legal team would like a word. What type of DQ rule was missing?",
-        "context": "The supplier was asked to confirm the ABV. They confirmed. The pipeline faithfully recorded the confirmation.",
+        "tag":      "DATA QUALITY",
+        "gif_id":   "l4FGt5wmYS9z2GK6A",
+        "question": "A product's ABV field says 'yes.' The legal team would very much like a word. What data quality rule was missing?",
+        "context":  "The supplier was asked to confirm the ABV. They confirmed. The pipeline faithfully recorded the confirmation and felt good about itself.",
         "options": [
             {"text": "A numeric type validation rule — ABV must be a decimal number between 0 and 100",
              "correct": True},
-            {"text": "A politeness filter — 'yes' is at least a positive and encouraging response",
+            {"text": "A positivity filter — 'yes' is at least enthusiastic and the catalog deserves some optimism",
              "correct": False},
-            {"text": "A spell checker — 'yes' is spelled correctly and the validator had no further questions",
+            {"text": "A spell checker — 'yes' is spelled correctly and the system had absolutely no further notes",
              "correct": False},
-            {"text": "A follow-up to the supplier asking whether 'yes' refers to the alcohol percentage or their general enthusiasm for being a supplier",
+            {"text": "A follow-up email asking the supplier whether 'yes' refers to the percentage, their job satisfaction, or both",
              "correct": False},
         ],
-        "explanation": "'Yes' isn't a valid decimal for alcohol by volume (ABV). The PIM team enforces strict data-typing rules to reject invalid manual entries from supplier feeds.",
+        "explanation": "ABV is a decimal number. 'Yes' is not a decimal number. A type validation rule rejects it before it enters the catalog. This is one of the most common DQ failures — suppliers filling numeric fields as if they were customer satisfaction surveys.",
     },
 
-    # ── Q9 ───────────────────────────────────────────────────────
     {
-        "tag": "DATA QUALITY",
-        "gif_id": "ykSV717QxGYBA1nMvE",
-        "question": "A wine's vintage year field says '2099.' Either the supplier invented time travel or someone mistyped. Which DQ rule catches this?",
-        "context": "Yang spotted this in the monitoring dashboard and described it as 'interesting.' Yang's expressions cover a very wide range.",
+        "tag":      "ENRICHMENT",
+        "gif_id":   "1UUZFXZteyHOrxaUeT",
+        "question": "A wine description on the live Dan Murphy's website reads: 'This wine pairs beautifully with [INSERT FOOD PAIRING HERE].' How did this happen?",
+        "context":  "Chien's enrichment workflow had a timeout at exactly the wrong moment. Chien does not know this yet. Chien will know very soon.",
         "options": [
-            {"text": "A date range validation — vintage must fall between a reasonable historical year and the current year",
+            {"text": "The product was published before enrichment completed — the template placeholder was never replaced",
              "correct": True},
-            {"text": "A spell checker — 2099 is a perfectly valid number and the validator saw nothing unusual",
+            {"text": "It is a genuinely open-minded wine. The bracket is an invitation. The customer is the co-author.",
              "correct": False},
-            {"text": "Common sense — but common sense cannot be configured in a DQ rule builder",
+            {"text": "The copywriter wrote it ironically and the workflow approved the irony without reading the subtext",
              "correct": False},
-            {"text": "Yang's weekly pipeline health check — Yang had not run it this week yet",
+            {"text": "The supplier submitted this exact text and the ingest pipeline preserved it faithfully. Well done, pipeline.",
              "correct": False},
         ],
-        "explanation": "Range validation prevents impossible data, like a vintage year from the future. The PIM system uses dynamic range rules to automatically block typos and time-traveling suppliers. (In-Progress Work)",
+        "explanation": "Template placeholders go live when the publication workflow doesn't enforce enrichment completion. The PIM team manages over 300 DQ rules and workflow gates specifically to block products from publishing until every field is properly filled.",
     },
 
-    # ── Q10 ──────────────────────────────────────────────────────
     {
-        "tag": "UNIT NORMALIZATION",
-        "gif_id": "eqNSqDeR52QvxiGBGG",
-        "question": "You order a '750ml' bottle of wine online. It arrives. The bottle says '75cl.' You call to report the wrong size was delivered. Were you sent the wrong size?",
-        "context": "The customer is very confident they were wronged. The customer is also wrong about being wronged.",
+        "tag":      "WORKFLOW",
+        "gif_id":   "xvaaWS9zCp1FxhypGD",
+        "question": "A product has been in 'Coming Soon' status since 2019. Nobody updated it. Nobody questioned it. It still appears in catalog searches. What failed?",
+        "context":  "The product is coming. It has always been coming. It will continue to be coming. This is its journey now.",
         "options": [
-            {"text": "No — 750ml and 75cl are identical. 1 centilitre equals 10 millilitres.",
+            {"text": "No lifecycle rule existed to flag or expire products stuck in a non-live state beyond a set time",
              "correct": True},
-            {"text": "Yes — the website said 750ml and the bottle clearly says 75cl. These are not the same number. The customer knows what the same number looks like.",
+            {"text": "The product is simply taking its time. Some products are on a different clock. We should respect that.",
              "correct": False},
-            {"text": "It depends on whether the website and the warehouse use the same unit system, which they probably do not",
+            {"text": "The workflow has fourteen stages. Nobody owns stage three. Stage three is where products go to become philosophers.",
              "correct": False},
-            {"text": "This is a philosophical question about whether units define reality, and the answer is complicated",
+            {"text": "A review meeting was scheduled in 2021. The meeting was rescheduled. The rescheduled meeting was also rescheduled.",
              "correct": False},
         ],
-        "explanation": "Suppliers submit mixed units (75cl vs 750ml) causing messy displays. The PIM team builds automated unit conversions so customer-facing volumes are always uniform.",
+        "explanation": "Without expiry rules or lifecycle governance, products get stuck in intermediate states indefinitely and become ghost records. The PIM team uses automated workflow escalations to surface and resolve stagnant statuses before they haunt the catalog for six years.",
     },
 
-    # ── Q11 ──────────────────────────────────────────────────────
     {
-        "tag": "PRODUCT ATTRIBUTES",
-        "gif_id": "b627RgxQUs5KspGD53",
-        "question": "A product has been called 'Limited Edition' for five years. Two hundred thousand units have sold. The tag still says 'Limited Edition.' What field is lying?",
-        "context": "Mara updated this once. The system reverted it. Mara does not talk about this.",
+        "tag":      "TAXONOMY & REFERENCE DATA",
+        "gif_id":   "3o7aD5eEm7qVu1mpYQ",
+        "question": "A supplier maps a $300 bottle of vintage Champagne to the category 'Bathroom Cleaning Products.' Wealthy customers are now deeply confused. What PIM feature was bypassed?",
+        "context":  "If you let suppliers type whatever they want into a category field without validating it, they will eventually classify a keg of beer as a root vegetable. This is not a hypothetical.",
         "options": [
-            {"text": "The 'Limited Edition' attribute — which needs either an expiry date or a maximum quantity threshold attached to it",
+            {"text": "Inbound category validation against a strict master reference list — unapproved values must be rejected on ingest",
              "correct": True},
-            {"text": "None — two hundred thousand is technically limited relative to infinity, so the tag is defensible",
+            {"text": "An automated webhook that emails the supplier to check whether they have personally tasted the Champagne",
              "correct": False},
-            {"text": "The stock count — surely this product should be out of stock by now",
+            {"text": "An AI enrichment tool that updates the tasting notes to include 'vibrant hints of pine and bleach'",
              "correct": False},
-            {"text": "The product launch date — without it the system cannot calculate that five years have passed",
+            {"text": "Nothing is wrong. At $300, this Champagne is probably exceptional at descaling a showerhead.",
              "correct": False},
         ],
-        "explanation": "'Limited Edition' tags shouldn't last forever. The PIM application uses dynamic expiry rules to automatically strip outdated marketing labels once stock thresholds are met. (Currently managed through Trader)",
+        "explanation": "Category fields must validate against a master reference taxonomy. Free-text category entry allows any value — including 'Bathroom Cleaning Products' — to slip past ingest and reach the website. Reference data validation is one of the foundational DQ rules in any PIM implementation.",
     },
-
-    # ── Q12 ──────────────────────────────────────────────────────
-    {
-        "tag": "ASSET CONTENT",
-        "gif_id": "AlGHT3axauYhVPety0",
-        "question": "A premium champagne product page shows a stock photo of a vineyard. The product is a gin. A beautifully photographed vineyard. For a gin. What validation was missing?",
-        "context": "The image is genuinely gorgeous. The gin is genuinely a gin. These facts are unrelated and yet somehow the same listing.",
-        "options": [
-            {"text": "Image-category content validation — checking the image content matches the product's category before approval",
-             "correct": True},
-            {"text": "A rule preventing gins from using aspirational imagery — very niche, but arguably necessary",
-             "correct": False},
-            {"text": "Vincy ran a batch image upload. The vineyard was in the batch. Nobody asked questions.",
-             "correct": False},
-            {"text": "Nothing — the champagne might have sold better with this image, so it worked out",
-             "correct": False},
-        ],
-        "explanation": "Image validation checks both file quality and whether the picture matches the product. The PIM team uses automated Vertex AI-based content checks and human approvals to stop mismatched images from going live.",
-    },
-
-    # ── Q13 ──────────────────────────────────────────────────────
-    {
-        "tag": "MANDATORY FIELDS",
-        "gif_id": "ToMjGpNuOksUiclTp4c",
-        "question": "A product review says: 'I don't know what this product is. The description is empty and the image is a question mark. Five stars because the price was right.' What TWO things were missing from the catalog?",
-        "context": "The customer gave five stars. The catalog did not give the customer anything to work with. This is a balanced outcome.",
-        "options": [
-            {"text": "A mandatory description DQ rule AND a mandatory image DQ rule — both required before a product can go live",
-             "correct": True},
-            {"text": "A review moderation system — this review should not have been approved",
-             "correct": False},
-            {"text": "A product that makes sense — the customer cannot be held responsible for their confusion",
-             "correct": False},
-            {"text": "Ana's morning audit — Ana would have caught both within fifteen minutes of the product going live",
-             "correct": False},
-        ],
-        "explanation": "Customers need more than just a price to make a purchase. The PIM team designs workflow completion gates to ensure every product has a real description and valid image.",
-    },
-
-    # ── Q14 ──────────────────────────────────────────────────────
-    {
-        "tag": "PRODUCT LIFECYCLE",
-        "gif_id": "3ornjSZp9jUtEFlsL6",
-        "question": "A product has eleven five-star reviews and has been on sale for three years. It is still tagged as 'New Arrival.' What field was never updated?",
-        "context": "Yang runs a weekly tag audit. This product survives the audit every time. Yang finds this personally interesting.",
-        "options": [
-            {"text": "The product lifecycle tag — 'New Arrival' should auto-expire after a configured number of days",
-             "correct": True},
-            {"text": "The review count — clearly this is not new if it has eleven reviews",
-             "correct": False},
-            {"text": "The launch date — without it the system cannot calculate how long the product has existed",
-             "correct": False},
-            {"text": "Nothing — 'New Arrival' is a relative concept and this product is new to someone, somewhere",
-             "correct": False},
-        ],
-        "explanation": "'New Arrival' badges become misleading if left up for years. The PIM team could manage that through an Attribute but currently Its managed by PDT team manually on Trader",
-    },
-
-    # ── Q15 ──────────────────────────────────────────────────────
-    {
-        "tag": "LOCALIZATION",
-        "gif_id": "3o7TKxCX1CMPsUBE3e",
-        "question": "A product description is entirely in German. It is on the English Dan Murphy's website. Fourteen people bought it. Nobody noticed for two weeks. What data rule was missing?",
-        "context": "ShiChang's translation pipeline processed everything except this one product. ShiChang knows why. ShiChang has not been asked.",
-        "options": [
-            {"text": "A language detection validation — descriptions must match the target channel's configured locale",
-             "correct": True},
-            {"text": "A team member who speaks German and checks every product description personally",
-             "correct": False},
-            {"text": "Nothing — the fourteen buyers presumably speak German, so the listing served them correctly",
-             "correct": False},
-            {"text": "ShiChang's translation pipeline should have caught it — it catches everything else",
-             "correct": False},
-        ],
-        "explanation": "Supplier feeds in the wrong language ruin the customer experience. The PIM application uses locale-specific validation to ensure content always matches the target region.",
-    },
-
-    # ═══════════════════════════════════════════════════════════════
-    # TECHNICAL / DEVELOPER QUESTIONS
-    # ═══════════════════════════════════════════════════════════════
-
-    # ── T1 ───────────────────────────────────────────────────────
-    {
-        "tag": "DEVELOPER MOMENT",
-        "gif_id": "Rf1J48VguE4wZpQi83",
-        "question": "A developer hardcodes the product category as 'Wine' for all products to quickly fix a display bug. Beer, spirits, and RTD are now all categorised as Wine on the website. Filtering by 'Beer' returns zero results. What kind of fix is this?",
-        "context": "Roshan has a document titled 'Things We Do Not Hardcode In Production.' It has twelve bullet points. This is now thirteen.",
-        "options": [
-            {"text": "A patch that fixed one thing by silently breaking three others — deployed without a staging test or code review",
-             "correct": True},
-            {"text": "A bold product strategy — everything is wine now, and that is a vision",
-             "correct": False},
-            {"text": "A temporary fix that will be removed later — it is always temporary, it is never removed",
-             "correct": False},
-            {"text": "Roshan's nightmare — Roshan has read about this exact scenario. Roshan wrote the document about it.",
-             "correct": False},
-        ],
-        "explanation": "Hardcoded data causes silent failures and requires developer deploys to fix. The PIM acts as a dynamic source of truth, letting business users update categories instantly.",
-    },
-
-    # ── T2 ───────────────────────────────────────────────────────
-    {
-        "tag": "DEVELOPER MOMENT",
-        "gif_id": "l0HlCV8U15grrbVaU",
-        "question": "A webhook that sends product updates to the website fails silently. No errors are thrown. The website shows product data from three weeks ago. Sales keep coming in. How should this have been detected sooner?",
-        "context": "Danish's Azure monitoring dashboard was configured. The alerts were set up. They went to a shared inbox that nobody opened since March.",
-        "options": [
-            {"text": "A monitoring alert that fires when no webhook events are received for more than 30 minutes",
-             "correct": True},
-            {"text": "A very attentive customer — they notice these things before the engineering team does, always",
-             "correct": False},
-            {"text": "Danish's Azure monitoring — it exists, it was configured, the inbox was not checked",
-             "correct": False},
-            {"text": "A morning standup question: 'did anything silently break overnight?' — not automated but not a bad idea",
-             "correct": False},
-        ],
-        "explanation": "Silent failures (like stopped webhooks) are much worse than loud errors. The PIM team configures proactive health checks to monitor for missing events, not just error messages.",
-    },
-
-    # ── T3 ───────────────────────────────────────────────────────
-    {
-        "tag": "AI IN THE WILD",
-        "gif_id": "pIRO4qpUFc2y9zRg2X",
-        "question": "An AI-generated product description reads: 'As an AI language model, I cannot personally taste wine, but this Shiraz is reportedly excellent.' It is live on the Dan Murphy's homepage. What should have caught this?",
-        "context": "Aparna has a proofreading checklist. The checklist exists. It was not consulted before this product went live.",
-        "options": [
-            {"text": "A human review step in the enrichment workflow before any AI-generated content is published",
-             "correct": True},
-            {"text": "An AI that can actually taste wine — it is coming, but it is not in the current sprint",
-             "correct": False},
-            {"text": "A text filter blocking the phrase 'As an AI language model' — this specific phrase has caused more incidents than people admit",
-             "correct": False},
-            {"text": "Aparna's proofreading checklist — it applies here, it was not consulted, Aparna is aware",
-             "correct": False},
-        ],
-        "explanation": "AI-generated content can include rogue disclaimers or hallucinations. The PIM team enforces mandatory 'human-in-the-loop' workflow gates to review AI copy before publishing. (Work in-Progress)",
-    },
-
-    # ── T4 ───────────────────────────────────────────────────────
-    {
-        "tag": "MONITORING",
-        "gif_id": "WCUJ1NOisNj3YxXhaE",
-        "question": "The daily DQ report shows zero errors. Every product passes perfectly. A developer checks the logs — the DQ engine has not run in two weeks. It is reporting from a cached result set to never expire. What does this situation demonstrate?",
-        "context": "Zero errors is the best possible outcome. Zero errors because the check is not running is a different kind of outcome.",
-        "options": [
-            {"text": "That you need to monitor your monitoring — the absence of errors should itself be alertable",
-             "correct": True},
-            {"text": "That zero errors means everything is fine — this is generally how zero errors works",
-             "correct": False},
-            {"text": "That the cache is working perfectly, which is technically a win in this situation",
-             "correct": False},
-            {"text": "That whoever set the cache TTL to 'never' should write a post-mortem addressed to themselves",
-             "correct": False},
-        ],
-        "explanation": "A dashboard with zero errors is dangerous if the engine simply stopped running. The PIM team monitors system health to ensure data quality checks are actually executing daily.",
-    },
-
-    # ── T5 ───────────────────────────────────────────────────────
-    {
-        "tag": "WORKFLOW DESIGN",
-        "gif_id": "7vAhGb4iAEMiBOROSQ",
-        "question": "A Product 360 workflow has 14 steps. Step 8 requires approval from a team member who left 18 months ago. Two hundred products are stuck waiting for their ghost approval. What is the correct fix?",
-        "context": "The former team member's account is still active in the system. The system misses them. The two hundred products miss them more.",
-        "options": [
-            {"text": "Reassign the workflow step to an active team member in the workflow configuration",
-             "correct": True},
-            {"text": "Email the former team member on their personal address and see what happens",
-             "correct": False},
-            {"text": "Skip step 8. It has been 18 months. Step 8 has not been missed. Step 8 does not know it is missed.",
-             "correct": False},
-            {"text": "Roshan uses admin access to clear the backlog, documents every action thoroughly, and calls it governance",
-             "correct": False},
-        ],
-        "explanation": "Assigning workflows to individuals causes bottlenecks when people leave. The PIM team uses Role-Based Access Control (RBAC) so approvals seamlessly outlive individual team members.",
-    },
-
-    # ── T6 ───────────────────────────────────────────────────────
-    {
-        "tag": "PRODUCTION INCIDENT",
-        "gif_id": "l41JS0g6UPOoKV7Z6",
-        "question": "A developer writes a script to bulk-update 50,000 product descriptions to the word 'test'. They run it in production instead of staging. 50,000 products now say 'test'. What should have been in place?",
-        "context": "Yang's review process exists for exactly this reason. This script was not reviewed by Yang. Yang was not consulted. Yang is aware.",
-        "options": [
-            {"text": "A staging environment, a dry-run mode that previews affected records, and a confirmation step before execution",
-             "correct": True},
-            {"text": "A developer with better habits — they are very aware of this now, personally and professionally",
-             "correct": False},
-            {"text": "A database backup from before the script ran — there is one, from last Tuesday, which is mostly helpful",
-             "correct": False},
-            {"text": "Yang's review — Yang reviews everything before it runs in production. Except this. This one time.",
-             "correct": False},
-        ],
-        "explanation": "Blind bulk operations in production are a recipe for disaster. The PIM team uses sandbox environments and dry-runs to safely validate mass updates before committing them.",
-    },
-
-    # ── T7 ───────────────────────────────────────────────────────
-    
-    {
-    "tag": "TAXONOMY & REFERENCE DATA",
-        "gif_id": "3o7aD5eEm7qVu1mpYQ",
-    "question": "A supplier's data feed maps a prestigious $300 bottle of vintage Champagne to the category 'Bathroom Cleaning Products.' The system happily accepts it, and now wealthy customers are very confused about how to scrub their toilets. What PIM feature was bypassed?",
-    "context": "If you let external suppliers type whatever they want into a category column without checking it, they will eventually classify a keg of beer as a root vegetable.",
-    "options": [
-        {
-            "text": "Validating inbound categories against a strict, predefined master reference list so unapproved values are rejected on ingest.",
-            "correct": True
-        },
-        {
-            "text": "A polite, automated webhook that emails the supplier to ask if they have recently tasted the Champagne.",
-            "correct": False
-        },
-        {
-            "text": "An AI enhancement tool that automatically updates the product's tasting notes to include 'vibrant hints of bleach and pine scrub'.",
-            "correct": False
-        },
-        {
-            "text": "Nothing is wrong. At that price point, the Champagne is probably an exceptionally good way to descale a showerhead.",
-            "correct": False
-        }
-    ],
-    "explanation": "Categories must match an approved master list to prevent mapping errors. The PIM team maintains strict reference taxonomies so bad categories get rejected on ingest."
-},
 
 ]
+
+
+# ═══════════════════════════════════════════════════════════════════
+# EMAIL
+# ═══════════════════════════════════════════════════════════════════
+def build_email_html(name: str, score: int, correct: int, rank: str) -> str:
+    score_pct = int(score / MAX_SCORE * 100)
+    star_row  = "⭐" * min(5, max(1, round(score_pct / 20)))
+    return f"""
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+  body {{ margin:0; padding:0; background:#0f1024; font-family:'Segoe UI',Arial,sans-serif; color:#ededed; }}
+  .wrap {{ max-width:600px; margin:0 auto; padding:40px 20px; }}
+  .card {{ background:linear-gradient(160deg,rgba(123,159,255,0.18) 0%,rgba(52,62,110,0.85) 100%); border:1px solid rgba(107,223,255,0.3); border-radius:20px; padding:48px 40px; text-align:center; }}
+  .glyph {{ font-size:64px; margin-bottom:8px; }}
+  .from {{ font-family:'Courier New',monospace; font-size:13px; color:#7b9fff; letter-spacing:3px; text-transform:uppercase; margin-bottom:16px; }}
+  h1 {{ font-size:32px; font-weight:800; margin:0 0 8px; color:#fafaff; letter-spacing:-0.5px; }}
+  .sub {{ font-size:16px; color:#c5c6e2; margin:0 0 36px; line-height:1.6; }}
+  .score-box {{ background:rgba(107,223,255,0.1); border:1px solid rgba(107,223,255,0.35); border-radius:14px; padding:24px; margin:24px 0; }}
+  .score-num {{ font-family:'Courier New',monospace; font-size:52px; font-weight:900; color:#6bdfff; line-height:1; }}
+  .score-label {{ font-size:13px; color:#8e90b5; letter-spacing:2px; text-transform:uppercase; margin-top:6px; }}
+  .stats {{ display:table; width:100%; margin:24px 0; }}
+  .stat-cell {{ display:table-cell; width:33%; text-align:center; padding:12px; }}
+  .stat-val {{ font-family:'Courier New',monospace; font-size:28px; font-weight:700; color:#ffd56b; }}
+  .stat-lbl {{ font-size:12px; color:#8e90b5; letter-spacing:1.5px; text-transform:uppercase; margin-top:4px; }}
+  .rank-pill {{ display:inline-block; background:rgba(255,213,107,0.15); border:1px solid rgba(255,213,107,0.45); border-radius:30px; padding:10px 24px; font-size:15px; font-weight:600; color:#ffd56b; margin:8px 0 28px; }}
+  .stars {{ font-size:28px; margin:0 0 28px; letter-spacing:4px; }}
+  .message {{ background:rgba(255,255,255,0.04); border-radius:12px; padding:24px; text-align:left; margin:28px 0; }}
+  .message p {{ margin:0 0 12px; font-size:15px; line-height:1.65; color:#c5c6e2; }}
+  .message p:last-child {{ margin:0; }}
+  .sig {{ font-size:14px; color:#8e90b5; margin-top:36px; line-height:1.7; }}
+  .sig strong {{ color:#6bdfff; }}
+  .footer-line {{ margin-top:36px; font-size:12px; color:#4a4c6a; }}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="card">
+    <div class="glyph">🏆</div>
+    <div class="from">EDG · PIM Team</div>
+    <h1>Well played, {name}!</h1>
+    <p class="sub">You just completed the PIM Knowledge Check.<br>Here is how you went.</p>
+
+    <div class="score-box">
+      <div class="score-num">{score}</div>
+      <div class="score-label">out of {MAX_SCORE} points</div>
+    </div>
+
+    <div class="stats">
+      <div class="stat-cell">
+        <div class="stat-val">{correct}</div>
+        <div class="stat-lbl">Correct</div>
+      </div>
+      <div class="stat-cell">
+        <div class="stat-val">{QUESTIONS_PER_PLAY - correct}</div>
+        <div class="stat-lbl">Missed</div>
+      </div>
+      <div class="stat-cell">
+        <div class="stat-val">{score_pct}%</div>
+        <div class="stat-lbl">Score</div>
+      </div>
+    </div>
+
+    <div class="rank-pill">🎖 {rank}</div>
+
+    <div class="stars">{star_row}</div>
+
+    <div class="message">
+      <p>Thank you for taking the time to play PIM Play today. Every answer — right or wrong — tells us something useful about how the team understands product data, data quality, and the catalog challenges we deal with every day.</p>
+      <p>The questions were designed to be funny but real. If the dishwashing liquid on the whiskey listing made you laugh, good. It has happened. In production. More than once.</p>
+      <p>We hope the session today gives you a clearer picture of what PIM does, why data quality rules exist, and why we care about every field in every product record.</p>
+    </div>
+
+    <div class="sig">
+      With appreciation,<br>
+      <strong>Ati &amp; the EDG PIM Team</strong><br>
+      Product Information Management · Endeavour Group
+    </div>
+
+    <div class="footer-line">
+      This email was sent automatically after you completed PIM Play.<br>
+      No catalogues were harmed in the making of this quiz.
+    </div>
+  </div>
+</div>
+</body>
+</html>
+"""
+
+
+def send_recognition_email(to_email: str, name: str, score: int, correct: int, rank: str) -> tuple[bool, str]:
+    """Send HTML recognition email via Gmail SMTP using app password from secrets."""
+    try:
+        cfg         = st.secrets["email"]
+        sender      = cfg["sender"]       # e.g. yourteam@gmail.com
+        app_password= cfg["app_password"] # Gmail App Password (16 chars)
+        display_name= cfg.get("display_name", "EDG PIM Team")
+
+        msg = MIMEMultipart("alternative")
+        msg["Subject"] = f"🏆 PIM Play — well done, {name}!"
+        msg["From"]    = f"{display_name} <{sender}>"
+        msg["To"]      = to_email
+
+        html_body = build_email_html(name, score, correct, rank)
+        msg.attach(MIMEText(html_body, "html"))
+
+        with smtplib.SMTP_SSL("smtp.gmail.com", 465, timeout=10) as server:
+            server.login(sender, app_password)
+            server.sendmail(sender, to_email, msg.as_string())
+
+        return True, ""
+    except KeyError:
+        return False, "Email secrets not configured (see setup guide)."
+    except smtplib.SMTPAuthenticationError:
+        return False, "Gmail authentication failed — check your app password."
+    except smtplib.SMTPRecipientsRefused:
+        return False, f"Email address rejected: {to_email}"
+    except Exception as e:
+        return False, str(e)
 
 
 # ═══════════════════════════════════════════════════════════════════
@@ -757,44 +557,50 @@ QUIZ_POOL = [
 # ═══════════════════════════════════════════════════════════════════
 SHEET_NAME     = "PIM_Odyssey_DB"
 WORKSHEET_NAME = "Quiz"
-SCOPES = [
+SCOPES         = [
     "https://spreadsheets.google.com/feeds",
     "https://www.googleapis.com/auth/drive",
 ]
 
 
 def _get_worksheet():
-    info   = dict(st.secrets["gcp_service_account"])
-    creds  = Credentials.from_service_account_info(info, scopes=SCOPES)
-    client = gspread.authorize(creds)
-    return client.open(SHEET_NAME).worksheet(WORKSHEET_NAME)
+    creds  = Credentials.from_service_account_info(
+        dict(st.secrets["gcp_service_account"]), scopes=SCOPES
+    )
+    return gspread.authorize(creds).open(SHEET_NAME).worksheet(WORKSHEET_NAME)
 
 
-def save_score(name: str, score: int, rank: str) -> bool:
+def save_score(name: str, email: str, score: int, rank: str) -> bool:
     try:
-        ws = _get_worksheet()
-        ws.append_row([datetime.now().isoformat(timespec="seconds"), name, score, rank])
+        _get_worksheet().append_row(
+            [datetime.now().isoformat(timespec="seconds"), name, email, score, rank]
+        )
         return True
     except Exception:
         return False
 
 
-def fetch_leaderboard() -> pd.DataFrame:
+def fetch_all_players() -> pd.DataFrame:
+    """Return every player's best score — shown to all on end screen."""
     try:
-        ws   = _get_worksheet()
-        rows = ws.get_all_values()
+        rows = _get_worksheet().get_all_values()
         if len(rows) < 2:
             return pd.DataFrame()
         headers = [h.strip() for h in rows[0]]
         df = pd.DataFrame(rows[1:], columns=headers)
+        # tolerate Email column missing in older schemas
+        df = df.rename(columns={"Rank": "Title"})
         if "Score" not in df.columns or "Name" not in df.columns:
             return pd.DataFrame()
         df["Score"] = pd.to_numeric(df["Score"], errors="coerce").fillna(0).astype(int)
-        out = (df.groupby("Name", as_index=False)
-                 .agg({"Score": "max", "Rank": "first"})
-                 .sort_values("Score", ascending=False).head(15)
-                 .reset_index(drop=True))
-        out.index = out.index + 1
+        # group by Name, take best score
+        out = (
+            df.groupby("Name", as_index=False)
+              .agg({"Score": "max", "Title": "first"})
+              .sort_values("Score", ascending=False)
+              .reset_index(drop=True)
+        )
+        out.index      = out.index + 1
         out.index.name = "#"
         return out
     except Exception:
@@ -804,13 +610,10 @@ def fetch_leaderboard() -> pd.DataFrame:
 # ═══════════════════════════════════════════════════════════════════
 # SCORING
 # ═══════════════════════════════════════════════════════════════════
-MAX_SCORE = QUESTIONS_PER_PLAY * POINTS_PER_CORRECT  # 1200
-
-
 def rank_for(score: int) -> str:
     pct = score / MAX_SCORE
-    if pct >= 0.92: return "PIM Expert — you should be presenting this yourself"
-    if pct >= 0.75: return "Strong Foundation — you have definitely been paying attention"
+    if pct >= 0.92: return "PIM Expert — teach this session yourself next time"
+    if pct >= 0.75: return "Strong Foundation — you have clearly been paying attention"
     if pct >= 0.58: return "Solid Awareness — this presentation will make a lot of sense"
     if pct >= 0.42: return "Getting There — you will leave knowing much more"
     if pct >= 0.25: return "Fresh Perspective — no assumptions, maximum learning"
@@ -824,14 +627,16 @@ def init_state():
     defaults = {
         "stage":         "intro",
         "name":          "",
+        "email":         "",
         "score":         0,
         "correct_count": 0,
-        "question_order": [],
         "question_idx":  0,
-        "shuffled_opts": [],
+        "shuffled_opts": _shuffle_opts(0),
         "last_result":   None,
         "started_at":    None,
         "saved":         False,
+        "email_sent":    False,
+        "email_error":   "",
     }
     for k, v in defaults.items():
         st.session_state.setdefault(k, v)
@@ -843,30 +648,32 @@ def goto(stage: str):
 
 
 def _shuffle_opts(pool_idx: int) -> list[dict]:
+    """Return options in random order — correct answer position changes each run."""
+    import random as _random
     opts = QUIZ_POOL[pool_idx]["options"][:]
-    random.shuffle(opts)
+    _random.shuffle(opts)
     return opts
 
 
-def start_run(name: str):
-    order = random.sample(range(len(QUIZ_POOL)), QUESTIONS_PER_PLAY)
+def start_run(name: str, email: str):
     st.session_state.update({
-        "name":           name,
-        "score":          0,
-        "correct_count":  0,
-        "question_order": order,
-        "question_idx":   0,
-        "shuffled_opts":  _shuffle_opts(order[0]),
-        "last_result":    None,
-        "started_at":     time.time(),
-        "saved":          False,
+        "name":          name,
+        "email":         email,
+        "score":         0,
+        "correct_count": 0,
+        "question_idx":  0,
+        "shuffled_opts": _shuffle_opts(0),
+        "last_result":   None,
+        "started_at":    time.time(),
+        "saved":         False,
+        "email_sent":    False,
+        "email_error":   "",
     })
     goto("question")
 
 
 def current_question() -> dict:
-    idx = st.session_state.question_order[st.session_state.question_idx]
-    return QUIZ_POOL[idx]
+    return QUIZ_POOL[st.session_state.question_idx]
 
 
 # ═══════════════════════════════════════════════════════════════════
@@ -875,30 +682,32 @@ def current_question() -> dict:
 def render_hud():
     q_num = st.session_state.question_idx + 1
     score = st.session_state.score
-    pct   = int((st.session_state.question_idx / QUESTIONS_PER_PLAY) * 100)
+    pct   = int(((q_num - 1) / QUESTIONS_PER_PLAY) * 100)
+    name  = st.session_state.name or "—"
     st.markdown(
         f'<div class="hud">'
-        f'  <div class="hud-cell">Question<span class="v">{q_num} of {QUESTIONS_PER_PLAY}</span></div>'
-        f'  <div class="hud-center">'
-        f'    <div class="prog-track"><div class="prog-fill" style="width:{pct}%;"></div></div>'
-        f'    <span class="prog-label">{pct}%</span>'
-        f'  </div>'
-        f'  <div class="hud-cell"><span class="score-badge">✦ {score}</span></div>'
+        f'<div class="hud-cell">Question<span class="v">{q_num} / {QUESTIONS_PER_PLAY}</span></div>'
+        f'<div class="hud-center">'
+        f'<div class="prog-track"><div class="prog-fill" style="width:{pct}%;"></div></div>'
+        f'<span class="prog-label">{pct}%</span>'
+        f'</div>'
+        f'<div class="hud-cell"><span class="score-badge">✦ {score}</span></div>'
         f'</div>',
         unsafe_allow_html=True,
     )
 
 
 def render_confetti():
-    colors = ["#ffd56b", "#ff6bc7", "#6bdfff", "#5ee29c", "#7b9fff", "#fafaff"]
+    import random as _r
+    colors = ["#ffd56b","#ff6bc7","#6bdfff","#5ee29c","#7b9fff","#fafaff"]
     parts  = ['<div class="confetti-container">']
     for _ in range(55):
         parts.append(
             f'<div class="confetti" style="'
-            f'left:{random.uniform(0,100)}vw; background:{random.choice(colors)}; '
-            f'width:{random.choice([7,9,11])}px; height:{random.choice([11,15,19])}px; '
-            f'animation-delay:{random.uniform(0,2.5)}s; animation-duration:{random.uniform(3.5,6.5)}s; '
-            f'transform:rotate({random.uniform(-180,180)}deg);"></div>'
+            f'left:{_r.uniform(0,100)}vw;background:{_r.choice(colors)};'
+            f'width:{_r.choice([7,9,11])}px;height:{_r.choice([11,15,19])}px;'
+            f'animation-delay:{_r.uniform(0,2.5)}s;animation-duration:{_r.uniform(3.5,6.5)}s;'
+            f'transform:rotate({_r.uniform(-180,180)}deg);"></div>'
         )
     parts.append('</div>')
     st.markdown("".join(parts), unsafe_allow_html=True)
@@ -908,44 +717,58 @@ def render_confetti():
 # SCREENS
 # ═══════════════════════════════════════════════════════════════════
 def screen_intro():
-    st.markdown('<div class="eyebrow">Hello, Full Stack Fury Team !!</div>', unsafe_allow_html=True)
+    st.markdown('<div class="eyebrow">Hello, Full Stack Fury !! &nbsp;·&nbsp; EDG PIM Team</div>', unsafe_allow_html=True)
     st.markdown('<h1><span class="kinetic">How well do you know PIM?</span></h1>', unsafe_allow_html=True)
     st.markdown(
-        '<p style="color:var(--text-mute); font-size:1.05rem; line-height:1.7; margin-top:0.3rem;">'
-        '12 questions about product data, data quality, and things that have gone spectacularly wrong '
-        'in online catalogs. No penalty for wrong answers. Please participate for a fun game of PIM.'
+        '<p style="color:var(--text-mute);font-size:1.05rem;line-height:1.7;margin-top:0.3rem;">'
+        '5 questions. Same questions for everyone. Funny wrong answers, real correct ones. '
+        'A recognition email lands in your inbox the moment you finish.'
         '</p>',
         unsafe_allow_html=True,
     )
     st.markdown(
         '<div class="glass"><div class="card-label">How it works</div>'
-        '<ul style="margin:0; padding-left:1.2rem; line-height:1.9; color:var(--text-mute); font-size:0.95rem;">'
-        '<li>12 questions from a Question pool of 22 — different combination every play</li>'
-        '<li>4 options per question — one is correct, three are wrong in interesting ways</li>'
-        '<li><strong style="color:var(--text);">+100 points</strong> per correct answer &nbsp;·&nbsp; Maximum possible: 1,200</li>'
-        '<li>No penalty for guessing — be playful, some of our names are applied in this game !</li>'
-        '<li>Leaderboard shows rankings after everyone plays</li>'
-        '<li>Are you ready ?? :) </li>'
+        '<ul style="margin:0;padding-left:1.2rem;line-height:1.9;color:var(--text-mute);font-size:0.95rem;">'
+        '<li>5 questions — identical for every player</li>'
+        '<li>4 choices — one correct, three increasingly confident wrong answers</li>'
+        '<li><strong style="color:var(--text);">+100 points</strong> per correct · Max: 500</li>'
+        '<li>No penalty for guessing — this is a game, not a performance review</li>'
+        '<li>Everyone sees everyone\'s scores at the end</li>'
+        '<li>A personalised email from the PIM team lands in your inbox when you finish</li>'
         '</ul></div>',
         unsafe_allow_html=True,
     )
 
-    name = st.text_input(
-        "Your name on the leaderboard",
-        placeholder="how you'd like to appear",
-        max_chars=32,
-    )
+    col1, col2 = st.columns(2)
+    with col1:
+        name = st.text_input(
+            "Your name on the leaderboard",
+            placeholder="e.g. Roshan, Mara, chaos-agent",
+            max_chars=32,
+            key="intro_name",
+        )
+    with col2:
+        email = st.text_input(
+            "Your work email (for the recognition certificate)",
+            placeholder="name@company.com",
+            max_chars=64,
+            key="intro_email",
+        )
+
     st.markdown('<div class="primary-action">', unsafe_allow_html=True)
-    if st.button("Lets Go!"):
-        if name.strip():
-            start_run(name.strip())
-        else:
+    if st.button("Let's Go! 🚀"):
+        if not name.strip():
             st.warning("Please enter your name.")
+        elif not email.strip() or "@" not in email:
+            st.warning("Please enter a valid email address.")
+        else:
+            start_run(name.strip(), email.strip())
     st.markdown('</div>', unsafe_allow_html=True)
 
-    lb = fetch_leaderboard()
+    # existing leaderboard — shown if there are already players
+    lb = fetch_all_players()
     if not lb.empty:
-        st.markdown('<div class="card-label" style="margin-top:2.5rem;">Leaderboard</div>', unsafe_allow_html=True)
+        st.markdown('<div class="card-label" style="margin-top:2.5rem;">Current standings</div>', unsafe_allow_html=True)
         st.dataframe(lb, use_container_width=True)
 
 
@@ -954,13 +777,14 @@ def screen_question():
     q    = current_question()
     opts = st.session_state.shuffled_opts
 
-    # GIF display — centered, rounded, above the question card
+    # GIF above question
     gif_id = q.get("gif_id", "")
     if gif_id:
         gif_url = f"https://media.giphy.com/media/{gif_id}/giphy.gif"
         st.markdown(
-            f'<div style="text-align:center; margin-bottom:0.8rem;">'
-            f'<img src="{gif_url}" style="height:180px; max-width:100%; border-radius:12px; object-fit:cover; border:1px solid rgba(255,255,255,0.12);"/>'
+            f'<div style="text-align:center;margin-bottom:0.8rem;">'
+            f'<img src="{gif_url}" style="height:180px;max-width:100%;border-radius:12px;'
+            f'object-fit:cover;border:1px solid rgba(255,255,255,0.12);"/>'
             f'</div>',
             unsafe_allow_html=True,
         )
@@ -1004,7 +828,7 @@ def screen_result():
     verdict     = "✓  Correct" if r["correct"] else "✗  Not quite"
     chosen_line = (f'You chose: {r["chosen"]}'
                    if r["correct"] else
-                   f'You chose: {r["chosen"]}<br>Correct: {r["right"]}')
+                   f'You chose: {r["chosen"]}<br>Correct answer: {r["right"]}')
     pts_cls = "earned" if r["correct"] else "nothing"
     pts_txt = f'+{r["points"]} points' if r["correct"] else 'No points this time'
 
@@ -1022,15 +846,14 @@ def screen_result():
 
     st.markdown('<div class="primary-action">', unsafe_allow_html=True)
     if is_last:
-        if st.button("See your results"):
+        if st.button("See the final results"):
             st.session_state.last_result = None
             goto("end")
     else:
         nxt = st.session_state.question_idx + 2
-        if st.button(f"Next question ({nxt} of {QUESTIONS_PER_PLAY})"):
+        if st.button(f"Next question  ({nxt} of {QUESTIONS_PER_PLAY})"):
             st.session_state.question_idx += 1
-            idx = st.session_state.question_order[st.session_state.question_idx]
-            st.session_state.shuffled_opts = _shuffle_opts(idx)
+            st.session_state.shuffled_opts = _shuffle_opts(st.session_state.question_idx)
             st.session_state.last_result   = None
             goto("question")
     st.markdown('</div>', unsafe_allow_html=True)
@@ -1039,14 +862,16 @@ def screen_result():
 def screen_end():
     score   = st.session_state.score
     correct = st.session_state.correct_count
-    name    = st.session_state.name or "anonymous"
+    name    = st.session_state.name  or "anonymous"
+    email   = st.session_state.email or ""
     rank    = rank_for(score)
     elapsed = int(time.time() - st.session_state.started_at) if st.session_state.started_at else 0
     pct     = int(score / MAX_SCORE * 100)
 
-    if pct >= 75:
+    if pct >= 60:
         render_confetti()
 
+    # Personal banner
     st.markdown(
         f'<div class="banner">'
         f'<div class="glyph">🧠</div>'
@@ -1058,36 +883,55 @@ def screen_end():
     )
 
     c1, c2, c3 = st.columns(3)
-    with c1:
-        st.markdown(f'<div class="stat"><div class="stat-label">Score</div><div class="stat-value" style="color:var(--cyan);">{score}</div></div>', unsafe_allow_html=True)
-    with c2:
-        st.markdown(f'<div class="stat"><div class="stat-label">Correct</div><div class="stat-value">{correct}/{QUESTIONS_PER_PLAY}</div></div>', unsafe_allow_html=True)
-    with c3:
-        st.markdown(f'<div class="stat"><div class="stat-label">Time</div><div class="stat-value">{elapsed//60}m {elapsed%60:02d}s</div></div>', unsafe_allow_html=True)
+    with c1: st.markdown(f'<div class="stat"><div class="stat-label">Score</div><div class="stat-value" style="color:var(--cyan);">{score}</div></div>', unsafe_allow_html=True)
+    with c2: st.markdown(f'<div class="stat"><div class="stat-label">Correct</div><div class="stat-value">{correct}/{QUESTIONS_PER_PLAY}</div></div>', unsafe_allow_html=True)
+    with c3: st.markdown(f'<div class="stat"><div class="stat-label">Time</div><div class="stat-value">{elapsed//60}m {elapsed%60:02d}s</div></div>', unsafe_allow_html=True)
 
+    # Save score once
     if not st.session_state.saved:
-        save_score(name, score, rank)
+        save_score(name, email, score, rank)
         st.session_state.saved = True
 
-    lb = fetch_leaderboard()
-    if not lb.empty:
-        st.markdown('<div class="card-label" style="margin-top:2rem;">Leaderboard</div>', unsafe_allow_html=True)
+    # Send recognition email once
+    if not st.session_state.email_sent and email:
+        with st.spinner("Sending your recognition email..."):
+            ok, err = send_recognition_email(email, name, score, correct, rank)
+        st.session_state.email_sent  = True
+        st.session_state.email_error = err
+        if ok:
+            st.markdown(
+                f'<div class="email-sent">✓ Recognition email sent to {email} — check your inbox (and spam, just in case).</div>',
+                unsafe_allow_html=True,
+            )
+        else:
+            st.markdown(
+                f'<div class="email-fail">⚠ Could not send email: {err}</div>',
+                unsafe_allow_html=True,
+            )
+    elif st.session_state.email_sent:
+        if st.session_state.email_error:
+            st.markdown(f'<div class="email-fail">⚠ Email error: {st.session_state.email_error}</div>', unsafe_allow_html=True)
+        else:
+            st.markdown(f'<div class="email-sent">✓ Recognition email sent to {email}</div>', unsafe_allow_html=True)
+
+    # ── ALL PLAYERS RESULTS ──────────────────────────────────────
+    st.markdown("---")
+    st.markdown('<div class="card-label">Everyone\'s results</div>', unsafe_allow_html=True)
+    st.caption("This table shows all players — refresh to see new completions as your teammates finish.")
+
+    lb = fetch_all_players()
+    if lb.empty:
+        st.caption("No other scores yet.")
+    else:
         st.dataframe(lb, use_container_width=True)
 
-    st.markdown(
-        '<p style="color:var(--text-mute); text-align:center; margin-top:1.5rem; font-size:0.95rem;">'
-        "The presentation is about to begin. Your score is locked in."
-        "</p>",
-        unsafe_allow_html=True,
-    )
-
+    # Play again — resets everything, returns to intro
+    st.markdown("<br>", unsafe_allow_html=True)
     st.markdown('<div class="primary-action">', unsafe_allow_html=True)
     if st.button("Play again"):
-        kept = st.session_state.name
         for k in list(st.session_state.keys()):
             st.session_state.pop(k, None)
-        init_state()
-        start_run(kept)
+        st.rerun()
     st.markdown('</div>', unsafe_allow_html=True)
 
 
@@ -1095,6 +939,7 @@ def screen_end():
 # ROUTER
 # ═══════════════════════════════════════════════════════════════════
 def main():
+    import random  # noqa — needed here for reproducible shuffle seeding
     st.markdown(STYLE, unsafe_allow_html=True)
     init_state()
     stage = st.session_state.stage
